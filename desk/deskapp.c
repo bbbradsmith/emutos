@@ -289,10 +289,38 @@ char *scan_str(char *pcurr, char **ppstr)
 }
 
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+/*
+ * Convert a DESKTOP.INF icon index to EMUDESK.INF
+ */
+static UWORD desktop_inf_icon(UWORD i)
+{
+    static const UWORD DESKTOP_INF_ICON_CONVERT[5] = {
+        IG_FLOPPY,
+        IG_FOLDER,
+        IG_TRASH,
+        IG_APPL,
+        IG_DOCU,
+    };
+    if (i > 4)
+        return IG_APPL;
+    return DESKTOP_INF_ICON_CONVERT[i];
+}
+#endif
+
+
 /*
  *  Parse a single line from the EMUDESK.INF file
+ *
+ *  If CONF_WITH_DESKTOP_INF_FALLBACK icons will be translated
+ *    #TMDINXVO compatible? not sure about variable params? TODO what is 000
+ *    #YGPF compatible? not sure about variable params? TODO
  */
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
 static char *app_parse(char *pcurr, ANODE *pa)
+#else
+static char *app_parse(char *pcurr, ANODE *pa, bool desktop_inf)
+#endif
 {
     WORD temp;
 
@@ -364,9 +392,16 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pa->a_dicon = IG_DOCU;
     pcurr++;
 
-    /*
-     * convert icon numbers in EMUDESK.INF revision 0
-     */
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    /* convert icon numbers in DESKTOP.INF */
+    if (desktop_inf)
+    {
+        pa->a_aicon = desktop_inf_icon(pa->a_aicon);
+        pa->a_dicon = desktop_inf_icon(pa->a_dicon);
+    }
+    else
+#endif
+    /* convert icon numbers in EMUDESK.INF revision 0 */
     if (inf_rev_level == 0)
     {
         if (pa->a_aicon == IG_APPL_REV0)
@@ -382,7 +417,12 @@ static char *app_parse(char *pcurr, ANODE *pa)
     }
     pcurr = scan_str(pcurr, &pa->a_pappl);
     pcurr = scan_str(pcurr, &pa->a_pdata);
+
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (*pcurr == ' ')          /* new format */
+#else
+    if (!desktop_inf && *pcurr == ' ')
+#endif
     {
         pcurr++;
         if (*pcurr & INF_AT_APPDIR)
@@ -394,6 +434,11 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pcurr++;
     }
     pcurr = scan_str(pcurr, &pa->a_pargs);
+
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (desktop_inf)
+        pa->a_pargs[0] = '\0';
+#endif
 
 #if CONF_WITH_VIEWER_SUPPORT
     if (is_viewer(pa))
@@ -686,9 +731,30 @@ static void read_inf_file(char *infbuf)
     inf_file_name[0] += G.g_stdrv;      /* Adjust drive letter  */
 
     ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
+
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (ret < 0L)
         ret = 0L;
     infbuf[ret] = '\0';
+#else
+    if (ret >= 0L)
+    {
+        infbuf[ret] = '\0';
+        if (ret == 0)
+            infbuf[1] = '\0'; /* 0,0 marks as empty with no fallback */
+    }
+    else                      /* not found, try ST desktop.inf instead */
+    {
+        infbuf[0] = '\0';     /* infbuf[0]=0 marks emudesk.inf not found */
+        strcpy(inf_file_name, INF_FILE_ALT1);
+        inf_file_name[0] += G.g_stdrv;
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-2, infbuf+1);
+        if (ret >= 0)
+            infbuf[ret+1] = '\0';
+        else
+            infbuf[1] = '\0'; /* empty file 0,0 */
+    }
+#endif
 }
 
 
@@ -831,6 +897,8 @@ void app_start(void)
 
     shel_get(buf, SIZE_SHELBUF);
     inf_data = buf + CPDATA_LEN;
+
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
      && (inf_data[0] != '#'))               /* invalid signature    */
         read_inf_file(inf_data);            /*   so read from disk  */
@@ -838,10 +906,34 @@ void app_start(void)
     /* If there's still no EMUDESK.INF data, build one now */
     if (inf_data[0] != '#')
         build_inf(inf_data, xcnt, ycnt);
+#else
+    /* desktop.inf is stored after a 0 byte */
+    if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
+     && (inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '\#'))
+        read_inf_file(inf_data);
+
+    if ((inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '\#'))
+        build_inf(inf_data, xcnt, ycnt);
+#endif
 
     wincnt = 0;
     inf_rev_level = 0;
     pcurr = inf_data;
+
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (pcurr == '\0')
+        pcurr++;                        /* desktop.inf */
+    /* #R isn't found in desktop.inf
+     * #Z is compatible
+     * #TMGYFPDINXVO are compatible or not present, dispatched to app_parse()
+     * #W is compatible? TODO
+     * #E the first few preferences are compatible TODO
+     * #Q is compatible
+     * #K shortcuts are incompatible TODO
+     // TODO use the last byte of the buffer != 0 instead of first byte = 0
+     // this will make the code cleaner, less ++ at the start
+     */
+#endif
 
     while(*pcurr)
     {
@@ -876,7 +968,11 @@ void app_start(void)
             pa = app_alloc();
             if (!pa)                    /* paranoia */
                 return;
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
             pcurr = app_parse(pcurr, pa);
+#else
+            pcurr = app_parse(pcurr, pa, inf_data[0]==0);
+#endif
             if ((pa->a_type == AT_ISFILE) && pauto)
             {                           /* autorun exists & not yet merged */
                 if (strcmp(pauto,pa->a_pappl) == 0)
@@ -921,6 +1017,8 @@ void app_start(void)
             cnxsave->cs_dblclick = envr & INF_E1_DCMASK;
 
             pcurr = scan_2(pcurr, &envr);
+// TODO
+// envr = (INF_E2_DEFAULT & ~INF_E2_BLITTER) | (envr & INF_E2_BLITTER)
             cnxsave->cs_blitter = ( (envr & INF_E2_BLITTER) != 0);
             cnxsave->cs_confovwr = ( (envr & INF_E2_ALLOWOVW) == 0);
             if (envr & INF_E2_IDTDATE)
@@ -936,6 +1034,8 @@ void app_start(void)
             pcurr = scan_2(pcurr, &dummy);
 
             pcurr = scan_2(pcurr, &envr);
+// TODO
+// envr = INF_E5_DEFAULT
             if (envr & INF_E5_NOSORT)
                 cnxsave->cs_sort = CS_NOSORT;
 #if CONF_WITH_DESKTOP_CONFIG
@@ -965,6 +1065,7 @@ void app_start(void)
          * versions of the ROM to _load_ menu item shortcuts.
          */
         case 'K':                       /* menu item shortcuts */
+// TODO if desktop inf discard
             pcurr++;
             for (i = 0; i < NUM_SHORTCUTS; i++)
             {
@@ -972,7 +1073,9 @@ void app_start(void)
                 pcurr = scan_2(pcurr, &temp);
                 menu_shortcuts[i] = (UBYTE)temp;
             }
-        break;
+            break;
+        default:                        /* ignore unknown line types */
+            break;
         }
     }
 

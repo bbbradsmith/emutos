@@ -331,6 +331,7 @@ static LONG readfile(char *filename, LONG count, char *buf)
 }
 
 
+// TODO replace pcurr=0, #define INFTYPE() as a marker for infbuf[INF_SIZE] to check instead, or define it as 0 otherwise (will eliminate dead code?)
 /*
  *  Part 1 of early emudesk.inf processing
  *
@@ -339,6 +340,10 @@ static LONG readfile(char *filename, LONG count, char *buf)
  *
  *  If CONF_WITH_BACKGOUNDS is specified, we also get the desktop background
  *  colours (from #Q) & save them for use when initialising the desktop.
+ * 
+ *  If CONF_WITH_DESKTOP_INF_FALLBACK infbuf[0]=0 indicates desktop.inf:
+ *    #E resolution is converted.
+ *    #Q is compatible.
  */
 static void process_inf1(void)
 {
@@ -353,19 +358,37 @@ static void process_inf1(void)
     bgfound = FALSE;            /* assume 'Q' not found */
 #endif
 
-    for (pcurr = infbuf; *pcurr; )
+    pcurr = infbuf;
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (pcurr == '\0')
+        pcurr++;                /* desktop.inf */
+#endif
+
+    for ( ; *pcurr; )
     {
         if ( *pcurr++ != '#' )
             continue;
         switch(*pcurr++) {
         case 'E':               /* desktop environment, e.g. #E 3A 11 FF 02 */
+
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
             pcurr += 6;                 /* skip over non-video preferences */
+#else
+            if (infbuf[0])              /* emudesk.inf 2nd word, desktop.inf 1st */
+                pcurr += 6;
+#endif
+
             if (*pcurr == '\r')         /* no video info saved */
                 break;
-
             pcurr = scan_2(pcurr, &env1);
             pcurr = scan_2(pcurr, &env2);
             mode = MAKE_UWORD(env1, env2);
+
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (!infbuf[0])                        /* desktop.inf */
+                mode = (mode & 0x000F) | 0xFF00;   /* convert video mode */
+#endif
+
             mode = check_moderez(mode);
             if (mode == 0)              /* no change required */
                 break;
@@ -399,6 +422,10 @@ static void process_inf1(void)
  *  started, from the #Z line.  We also set the double-click speed
  *  and the blitter/cache status (if applicable), from the #E line.
  *
+ *  If CONF_WITH_DESKTOP_INF_FALLBACK infbuf[0]=0 indicates desktop.inf:
+ *    #E dclick and blitter are compatible, cache state is not
+ *    #Z is compatible
+ *
  *  Returns:
  *      TRUE if initial program is a GEM program (normal)
  *      FALSE if initial program is character-mode (only if an autorun
@@ -413,6 +440,11 @@ static BOOL process_inf2(BOOL *isauto)
     *isauto = FALSE;                /* assume no autorun program */
 
     pcurr = infbuf;
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (pcurr == '\0')
+        pcurr++;                    /* desktop.inf */
+#endif
+
     while (*pcurr)
     {
         if ( *pcurr++ != '#' )
@@ -429,10 +461,13 @@ static BOOL process_inf2(BOOL *isauto)
                 Blitmode((env&0x80)?1:0);
 #endif
 #if CONF_WITH_CACHE_CONTROL
-            pcurr = scan_2(pcurr, &env);    /* skip over video bytes if present */
-            pcurr = scan_2(pcurr, &env);
-            scan_2(pcurr, &env);            /* get desired cache state */
-            set_cache((env&0x08)?0:1);
+            if (!CONF_WITH_DESKTOP_INF_FALLBACK || infbuf[0]) /* emudesk.inf */
+            {
+                pcurr = scan_2(pcurr, &env);    /* skip over video bytes if present */
+                pcurr = scan_2(pcurr, &env);
+                scan_2(pcurr, &env);            /* get desired cache state */
+                set_cache((env&0x08)?0:1);
+            }
 #endif
         }
         else if (tmp == 'Z')        /* something like "#Z 01 C:\THING.APP@" */
@@ -765,9 +800,26 @@ void gem_main(void)
     /* read in first part of emudesk.inf */
     n = readfile(INF_FILE_NAME, INF_SIZE, infbuf);
 
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (n < 0L)
         n = 0L;
     infbuf[n] = '\0';           /* terminate input data */
+#else
+    if (n >= 0L) {
+        infbuf[n] = '\0';
+        if (n == 0L):
+            infbuf[1] = '\0';   /* 0,0 marks as empty with no fallback */
+    }
+    else                        /* not found, try ST desktop.inf instead */
+    {
+        infbuf[0] = '\0';       /* infbuf[0]=0 marks emudesk.inf not found */
+        n = readfile(INF_FILE_ALT1, INF_SIZE-1, infbuf+1);
+        if (n >= 0L)
+            infbuf[n+1] = '\0';
+        else
+            infbuf[1] = '\0';   /* empty file 0,0 */
+    }
+#endif
 
     if (!gl_changerez)          /* can't be here because of rez change,       */
         process_inf1();         /*  so see if .inf says we need to change rez */
