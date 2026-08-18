@@ -810,7 +810,7 @@ void gem_main(void)
 #else
     if (n >= 0L) {
         infbuf[n] = '\0';
-        if (n == 0L):
+        if (n == 0L)
             infbuf[1] = '\0';   /* 0,0 marks as empty with no fallback */
     }
     else                        /* not found, try ST desktop.inf instead */
