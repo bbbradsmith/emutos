@@ -46,16 +46,16 @@ extern UBYTE bootflags;
 extern LONG video_ram_size;
 extern void *video_ram_addr;
 #endif
-ULONG calc_vram_size(void);
 #define EXTRA_VRAM_SIZE 256UL   /* amount to overallocate, like Atari TOS */
 
 void flush_data_cache(void *start, long size);
 void invalidate_data_cache(void *start, long size);
 void invalidate_instruction_cache(void *start, long size);
 
-#if CONF_WITH_CACHE_CONTROL
+#if CONF_WITH_CACHE_CONTROL || CONF_WITH_NOVA
 WORD cache_exists(void);
 void set_cache(WORD enable);
+WORD get_cache(void);
 #endif
 
 /* bios allocation of ST-RAM */
@@ -103,6 +103,7 @@ BOOL is_text_pointer(const void *p);
 /* VIDEL routines */
 WORD get_videl_mode(void);
 #ifdef MACHINE_AMIGA
+extern int amiga_is_ntsc;
 WORD amiga_vgetmode(void);
 #endif
 

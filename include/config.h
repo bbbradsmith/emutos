@@ -6,7 +6,7 @@
  * Defines that should *not* be overridden should appear in sysconf.h
  * (or deskconf.h if they apply to EmuDesk).
  *
- * Copyright (C) 2001-2024 The EmuTOS development team
+ * Copyright (C) 2001-2025 The EmuTOS development team
  *
  * Authors:
  *  MAD     Martin Doering
@@ -125,6 +125,9 @@
  * Defaults for the FireBee target
  */
 #ifdef MACHINE_FIREBEE
+# ifndef CONF_WITH_ST_MMU
+#  define CONF_WITH_ST_MMU 0
+# endif
 # ifndef CONF_WITH_TT_MMU
 #  define CONF_WITH_TT_MMU 0
 # endif
@@ -1556,6 +1559,13 @@
 # define CONF_WITH_1FAT_SUPPORT 0
 #endif
 
+/*
+ * Set CONF_WITH_GPT_SUPPORT to 1 to enable support for hard disks
+ * with a GUID partition table (GPT).
+ */
+#ifndef CONF_WITH_GPT_SUPPORT
+# define CONF_WITH_GPT_SUPPORT 1
+#endif
 
 
 /********************************************************
@@ -1654,8 +1664,17 @@
 
 
 /************************************************************************
- *  S O F T W A R E   S E C T I O N   -   3 R D   P A R T Y   A P I     *
+ *  S O F T W A R E   S E C T I O N   -   H A R D   D I S K   A P I S   *
  ************************************************************************/
+
+/*
+ * set CONF_WITH_EXTERNAL_DISK_DRIVER to 1 to DEACTIVATE the built-in
+ * hard disk driver, and to boot a driver from the disk's root sector
+ * instead, like Atari TOS
+ */
+#ifndef CONF_WITH_EXTERNAL_DISK_DRIVER
+# define CONF_WITH_EXTERNAL_DISK_DRIVER 0
+#endif
 
 /*
  * set CONF_WITH_SCSI_DRIVER to 1 to activate support for the SCSI driver
@@ -1663,14 +1682,14 @@
  * to devices.  see the documentation by Steffen Engel for more details.
  */
 #ifndef CONF_WITH_SCSI_DRIVER
-# define CONF_WITH_SCSI_DRIVER 1
+# define CONF_WITH_SCSI_DRIVER !CONF_WITH_EXTERNAL_DISK_DRIVER
 #endif
 
 /*
  * Set CONF_WITH_XHDI to 1 to enable XHDI support (i.e. the XHDI cookie etc.)
  */
 #ifndef CONF_WITH_XHDI
-# define CONF_WITH_XHDI 1
+# define CONF_WITH_XHDI !CONF_WITH_EXTERNAL_DISK_DRIVER
 #endif
 
 
@@ -2003,6 +2022,10 @@
  * address space 0xFB0xxx, which is decoded to the /ROM3 signal.
  * This has the advantage of being always available since it does not
  * require initialization of a peripheral.
+ * Output can be decoded by connecting a logic analyzer to A8-A1,
+ * triggering on /ROM3, or by using a special firmware for the
+ * SidecarTridge Multi-device hardware:
+ * https://github.com/czietz/atari-debug-cart
  */
 #ifndef CARTRIDGE_DEBUG_PRINT
 # define CARTRIDGE_DEBUG_PRINT 0
@@ -2193,6 +2216,12 @@
 #if !CONF_WITH_VIDEL
 # if CONF_WITH_VDI_16BIT
 #  error CONF_WITH_VDI_16BIT requires CONF_WITH_VIDEL
+# endif
+#endif
+
+#if CONF_WITH_EXTERNAL_DISK_DRIVER
+# if CONF_WITH_XHDI || CONF_WITH_SCSI_DRIVER
+#  error CONF_WITH_EXTERNAL_DISK_DRIVER is mutually exclusive with CONF_WITH_XHDI / CONF_WITH_SCSI_DRIVER
 # endif
 #endif
 

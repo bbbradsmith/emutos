@@ -9,26 +9,26 @@ msgstr ""
 "Last-Translator: Jan Krupka <krupkaj@centrum.cz>\n"
 "Language-Team: Czech\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Type: text/plain; charset=cp895\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: bios/bios.c
 msgid "Memory test"
-msgstr "Test pamìti"
+msgstr "Test pamˆti"
 
 #: bios/bios.c
 msgid "complete"
-msgstr "dokonèen"
+msgstr "dokon‡en"
 
 #: bios/bios.c
 msgid "aborted"
-msgstr "zru¹en"
+msgstr "zru¨en"
 
 #: bios/bios.c
 msgid ""
 "System halted!\n"
 msgstr ""
-"Systém zastaven!\n"
+"Syst‚m zastaven!\n"
 
 #: bios/initinfo.c
 msgid "GEMDOS drives"
@@ -52,31 +52,31 @@ msgstr "Typ CPU"
 
 #: bios/initinfo.c
 msgid "Machine"
-msgstr "Poèítaè"
+msgstr "Po‡¡ta‡"
 
 #: bios/initinfo.c
 msgid "Boot time"
-msgstr "Èas startu"
+msgstr "€as startu"
 
 #: bios/initinfo.c
 msgid "Hold <Control> to skip AUTO/ACC"
-msgstr "Podr¾ <Ctrl> a pøeskoè AUTO/ACC"
+msgstr "Podr‘ <Ctrl> a p©esko‡ AUTO/ACC"
 
 #: bios/initinfo.c
 msgid "Hold <Alternate> to skip HDD boot"
-msgstr "Podr¾ <Alt> k pøeskoèení HDD"
+msgstr "Podr‘ <Alt> k p©esko‡en¡ HDD"
 
 #: bios/initinfo.c
 msgid "Press key 'X' to boot from X:"
-msgstr "Pro start z disku X: stisknìte klávesu 'X'."
+msgstr "Pro start z disku X: stisknˆte kl vesu 'X'."
 
 #: bios/initinfo.c
 msgid "Press <Esc> to run an early console"
-msgstr "Pro spu¹tìní brzké konzole stisknìte <Esc>."
+msgstr "Pro spu¨tˆn¡ brzk‚ konzole stisknˆte <Esc>."
 
 #: bios/initinfo.c
 msgid "Hold <Shift> to pause this screen"
-msgstr "Podr¾ <Shift> pro pauzu obrazovky"
+msgstr "Podr‘ <Shift> pro pauzu obrazovky"
 
 #: bios/kprint.c
 msgid ""
@@ -84,7 +84,7 @@ msgid ""
 "*** Press any key to continue ***"
 msgstr ""
 "\n"
-"*** Pokraèování libovolnou klávesou ***"
+"*** Pokra‡ov n¡ libovolnou kl vesou ***"
 
 #: bdos/osmem.c
 msgid ""
@@ -92,17 +92,17 @@ msgid ""
 "Use FOLDR100.PRG to get more.\n"
 "System halted!\n"
 msgstr ""
-"\033ENedostatek vnitøní pamìti.\n"
-"Uvolnìte její èást s FOLDR100.PRG\n"
-"Systém zastaven!\n"
+"\033ENedostatek vnit©n¡ pamˆti.\n"
+"Uvolnˆte jej¡ ‡ st s FOLDR100.PRG\n"
+"Syst‚m zastaven!\n"
 
 #: aes/gem_rsc.c
 msgid "Selection: ________.___"
-msgstr "Vıbìr: ________.___"
+msgstr "V˜bˆr: ________.___"
 
 #: aes/gem_rsc.c
 msgid "Directory:"
-msgstr "Adresáø:"
+msgstr "Adres ©:"
 
 #: aes/gem_rsc.c desk/desk_rsc.c
 msgid "Drive:"
@@ -114,7 +114,7 @@ msgstr "OK"
 
 #: aes/gem_rsc.c desk/desk_rsc.c
 msgid "Cancel"
-msgstr "Zru¹it"
+msgstr "Zru¨it"
 
 #: aes/gem_rsc.c
 msgid "[1]["
@@ -123,8 +123,8 @@ msgid "[1]["
 "[Cancel|Retry]"
 msgstr "[1]["
 "Disk v jednotce %c: je|"
-"fyzicky chránìn proti zápisu.]"
-"[Zru¹it|Opakovat]"
+"fyzicky chr nˆn proti z pisu.]"
+"[Zru¨it|Opakovat]"
 
 #: aes/gem_rsc.c
 msgid "[2]["
@@ -134,9 +134,9 @@ msgid "[2]["
 "[Cancel|Retry]"
 msgstr "[2]["
 "Jednotka %c: nereaguje.|"
-"Prosím zkontrolujte jednotku,|"
-"nebo zasuòte disk.]"
-"[Zru¹it|Opakovat]"
+"Pros¡m zkontrolujte jednotku,|"
+"nebo zasu¤te disk.]"
+"[Zru¨it|Opakovat]"
 
 #: aes/gem_rsc.c
 msgid "[1]["
@@ -145,8 +145,8 @@ msgid "[1]["
 "[Cancel|Retry]"
 msgstr "[1]["
 "Data na disku v jednotce %c:|"
-"mohou bıt po¹kozena.]"
-"[Zru¹it|Opakovat]"
+"mohou b˜t po¨kozena.]"
+"[Zru¨it|Opakovat]"
 
 #: aes/gem_rsc.c
 msgid "[2]["
@@ -154,9 +154,9 @@ msgid "[2]["
 "data on the disk in drive %c:.]"
 "[Cancel|Retry]"
 msgstr "[2]["
-"Aplikace nemù¾e pøeèíst|"
+"Aplikace nem–‘e p©e‡¡st|"
 "data na disku v jednotce %c:.]"
-"[Zru¹it|Opakovat]"
+"[Zru¨it|Opakovat]"
 
 #: aes/gem_rsc.c
 msgid "[1]["
@@ -164,9 +164,9 @@ msgid "[1]["
 "receiving data.]"
 "[Cancel|Retry]"
 msgstr "[1]["
-"Vıstupní zaøízení|"
-"nepøijímá data.]"
-"[Zru¹it|Opakovat]"
+"V˜stupn¡ za©¡zen¡|"
+"nep©ij¡m  data.]"
+"[Zru¨it|Opakovat]"
 
 #: aes/gem_rsc.c
 msgid "[3]["
@@ -176,9 +176,9 @@ msgid "[3]["
 "[Cancel]"
 msgstr "[3]["
 "Nastala chyba GEM.|"
-"Prosím kontaktujte|"
-"vıvojovı tım EmuTOS.]"
-"[Zru¹it]"
+"Pros¡m kontaktujte|"
+"v˜vojov˜ t˜m EmuTOS.]"
+"[Zru¨it]"
 
 #: aes/gem_rsc.c
 msgid "[2]["
@@ -187,9 +187,9 @@ msgid "[2]["
 "you just tried to access.]"
 "[  OK  ]"
 msgstr "[2]["
-"Aplikace nemù¾e najít|"
-"adresáø nebo soubor,|"
-"na kterı se sna¾í pøistoupit.]"
+"Aplikace nem–‘e naj¡t|"
+"adres © nebo soubor,|"
+"na kter˜ se sna‘¡ p©istoupit.]"
 "[  OK  ]"
 
 #: aes/gem_rsc.c
@@ -201,11 +201,11 @@ msgid "[1]["
 "you do not need.]"
 "[  OK  ]"
 msgstr "[1]["
-"Aplikace nemá dostatek místa|"
-"k otevøení dal¹ího dokumentu.|"
-"Pro získání volného místa|"
-"zavøete dokument, kterı|"
-"ji¾ nepotøebujete.]"
+"Aplikace nem  dostatek m¡sta|"
+"k otev©en¡ dal¨¡ho dokumentu.|"
+"Pro z¡sk n¡ voln‚ho m¡sta|"
+"zav©ete dokument, kter˜|"
+"ji‘ nepot©ebujete.]"
 "[  OK  ]"
 
 #: aes/gem_rsc.c
@@ -216,9 +216,9 @@ msgid "[1]["
 "is set to Read Only status.]"
 "[  OK  ]"
 msgstr "[1]["
-"Objekt s tímto jménem|"
-"ji¾ v adresáøi existuje,|"
-"nebo je pouze ke ètení.]"
+"Objekt s t¡mto jm‚nem|"
+"ji‘ v adres ©i existuje,|"
+"nebo je pouze ke ‡ten¡.]"
 "[  OK  ]"
 
 #: aes/gem_rsc.c
@@ -229,7 +229,7 @@ msgid "[1]["
 msgstr "[1]["
 "Jednotka, kterou jste|"
 "specifikovali, neexistuje.]"
-"[Zru¹it]"
+"[Zru¨it]"
 
 #: aes/gem_rsc.c
 msgid "[1]["
@@ -239,8 +239,8 @@ msgid "[1]["
 "to run.]"
 "[  OK  ]"
 msgstr "[1]["
-"Aplikace nemù¾e bıt spu¹tìna|"
-"pro nedostatek volné pamìti.]"
+"Aplikace nem–‘e b˜t spu¨tˆna|"
+"pro nedostatek voln‚ pamˆti.]"
 "[  OK  ]"
 
 #: aes/gem_rsc.c
@@ -248,16 +248,16 @@ msgid "[3]["
 "TOS error #%u.]"
 "[Cancel]"
 msgstr "[3]["
-"Chyba TOS è. #%u.]"
-"[ Zru¹it ]"
+"Chyba TOS ‡. #%u.]"
+"[ Zru¨it ]"
 
 #: aes/gem_rsc.c
 msgid "[3]["
 "Unsupported AES function #%d.]"
 "[Cancel]"
 msgstr "[3]["
-"Nepodporovaná AES funkce #%d.]"
-"[Zru¹it]"
+"Nepodporovan  AES funkce #%d.]"
+"[Zru¨it]"
 
 #: aes/gem_rsc.c
 msgid "[1]["
@@ -265,29 +265,29 @@ msgid "[1]["
 "this directory]"
 "[  OK  ]"
 msgstr "[1]["
-"Nedostatek pamìti pro|"
-"tento adresáø]"
+"Nedostatek pamˆti pro|"
+"tento adres ©]"
 "[  OK  ]"
 
 #: aes/gem_rsc.c
 msgid "ITEM SELECTOR"
-msgstr "VİBÌR POLO®EK"
+msgstr "VB‰R POLO’EK"
 
 #: desk/desk_rsc.c
 msgid "Name: ________.___"
-msgstr "Jméno: ________.___"
+msgstr "Jm‚no: ________.___"
 
 #: desk/desk_rsc.c
 msgid "Number of folders:         _____"
-msgstr "Poèet adresáøù:          _____ "
+msgstr "Po‡et adres ©–:          _____ "
 
 #: desk/desk_rsc.c
 msgid "Number of files:         _____"
-msgstr "Poèet souborù:          _____ "
+msgstr "Po‡et soubor–:          _____ "
 
 #: desk/desk_rsc.c
 msgid "Skip"
-msgstr "Pøeskoèit"
+msgstr "P©esko‡it"
 
 #: desk/desk_rsc.c
 msgid "Install"
@@ -315,11 +315,11 @@ msgstr "Datum:   __________"
 
 #: desk/desk_rsc.c
 msgid "Time:   __:__ __  "
-msgstr "Èas:   __:__ __  "
+msgstr "€as:   __:__ __  "
 
 #: desk/desk_rsc.c
 msgid "Drive identifier:  _           "
-msgstr "Oznaèení disku:   _            "
+msgstr "Ozna‡en¡ disku:   _            "
 
 #: desk/desk_rsc.c
 msgid "Disk label:  ________.___"
@@ -331,11 +331,11 @@ msgstr "Obsazeno:   __________ B "
 
 #: desk/desk_rsc.c
 msgid "Bytes available:    __________"
-msgstr "Volnıch:   __________ B "
+msgstr "Voln˜ch:   __________ B "
 
 #: desk/desk_rsc.c
 msgid "Identifier: _:"
-msgstr "Identifikátor: _:"
+msgstr "Identifik tor: _:"
 
 #: desk/desk_rsc.c
 msgid "Label: ____________"
@@ -343,7 +343,7 @@ msgstr "Jmenovka: ____________"
 
 #: desk/desk_rsc.c
 msgid "Application name: ________.___"
-msgstr "Jméno aplikace: ________.___"
+msgstr "Jm‚no aplikace: ________.___"
 
 #: desk/desk_rsc.c
 msgid "Arguments: ___________"
@@ -359,19 +359,19 @@ msgstr "Instalovat jako: F__"
 
 #: desk/desk_rsc.c
 msgid "Current name: ________.___"
-msgstr "Souèasné jméno: ________.___"
+msgstr "Sou‡asn‚ jm‚no: ________.___"
 
 #: desk/desk_rsc.c
 msgid "Copy's name: ________.___"
-msgstr "Jméno kopie: ________.___"
+msgstr "Jm‚no kopie: ________.___"
 
 #: desk/desk_rsc.c
 msgid "Key: ^_"
-msgstr "Klávesa: ^_"
+msgstr "Kl vesa: ^_"
 
 #: desk/desk_rsc.c
 msgid "Free RAM: _____________________"
-msgstr "Volná RAM: _____________________"
+msgstr "Voln  RAM: _____________________"
 
 #: desk/desk_rsc.c
 msgid "Label: ________.___"
@@ -379,7 +379,7 @@ msgstr "Jmenovka: ________.___"
 
 #: desk/desk_rsc.c
 msgid " Desk "
-msgstr " Desktop "
+msgstr " Plocha "
 
 #: desk/desk_rsc.c
 msgid " File "
@@ -387,11 +387,11 @@ msgstr " Soubor "
 
 #: desk/desk_rsc.c
 msgid " View "
-msgstr " Zobrazit "
+msgstr " Zobrazen¡ "
 
 #: desk/desk_rsc.c
 msgid " Options "
-msgstr " Mo¾nosti "
+msgstr " Mo‘nosti "
 
 #: desk/desk_rsc.c
 msgid "  Desktop info..."
@@ -399,11 +399,11 @@ msgstr "  O desktopu..."
 
 #: desk/desk_rsc.c
 msgid "  Open"
-msgstr "  Otevøít"
+msgstr "  Otev©¡t"
 
 #: desk/desk_rsc.c
 msgid "  Info/Rename..."
-msgstr "  Pøejmenovat..."
+msgstr "  P©ejmenovat..."
 
 #: desk/desk_rsc.c
 msgid "  Search..."
@@ -411,23 +411,23 @@ msgstr "  Hledat..."
 
 #: desk/desk_rsc.c
 msgid "  New folder..."
-msgstr "  Novı adresáø..."
+msgstr "  Nov˜ adres ©..."
 
 #: desk/desk_rsc.c
 msgid "  Close folder"
-msgstr "  Zavøít adresáø"
+msgstr "  Zav©¡t adres ©"
 
 #: desk/desk_rsc.c
 msgid "  Close top window"
-msgstr "  Zavøít horní okno"
+msgstr "  Zav©¡t horn¡ okno"
 
 #: desk/desk_rsc.c
 msgid "  Cycle windows"
-msgstr "  Dal¹í okno"
+msgstr "  Dal¨¡ okno"
 
 #: desk/desk_rsc.c
 msgid "  Select all items"
-msgstr "  Vybrat v¹e"
+msgstr "  Vybrat v¨e"
 
 #: desk/desk_rsc.c
 msgid "  Set file mask..."
@@ -439,7 +439,7 @@ msgstr "  Smazat..."
 
 #: desk/desk_rsc.c
 msgid "  Format floppy..."
-msgstr "  Formátovat disketu..."
+msgstr "  Form tovat disketu..."
 
 #: desk/desk_rsc.c
 msgid "  Eject floppy"
@@ -463,7 +463,7 @@ msgstr "  Jako text"
 
 #: desk/desk_rsc.c
 msgid "  Sort by name"
-msgstr "  Podle jména"
+msgstr "  Podle jm‚na"
 
 #: desk/desk_rsc.c
 msgid "  Sort by type"
@@ -479,15 +479,15 @@ msgstr "  Podle data"
 
 #: desk/desk_rsc.c
 msgid "  No sort"
-msgstr "  Netøídìnì"
+msgstr "  Net©¡dˆnˆ"
 
 #: desk/desk_rsc.c
 msgid "  Size to fit"
-msgstr "  Zarovnat na rozmìr"
+msgstr "  Zarovnat na rozmˆr"
 
 #: desk/desk_rsc.c
 msgid "  Set background..."
-msgstr "  Nastavit pozadí..."
+msgstr "  Nastavit pozad¡..."
 
 #: desk/desk_rsc.c
 msgid "  Install icon..."
@@ -499,7 +499,7 @@ msgstr "  Instalovat aplikaci..."
 
 #: desk/desk_rsc.c
 msgid "  Install devices"
-msgstr "  Instalovat zaøízení"
+msgstr "  Instalovat za©¡zen¡"
 
 #: desk/desk_rsc.c
 msgid "  Remove desktop icon"
@@ -507,7 +507,7 @@ msgstr "  Odstranit ikonu z plochy"
 
 #: desk/desk_rsc.c
 msgid "  Set preferences..."
-msgstr "  Nastavení..."
+msgstr "  Nastaven¡..."
 
 #: desk/desk_rsc.c
 msgid "  Desktop configuration..."
@@ -515,15 +515,15 @@ msgstr "  Konfigurace desktopu..."
 
 #: desk/desk_rsc.c
 msgid "  Change resolution..."
-msgstr "  Zmìnit rozli¹ení..."
+msgstr "  Zmˆnit rozli¨en¡..."
 
 #: desk/desk_rsc.c
 msgid "  Read .INF file..."
-msgstr "  Naèíst .INF soubor..."
+msgstr "  Na‡¡st .INF soubor..."
 
 #: desk/desk_rsc.c
 msgid "  Save desktop..."
-msgstr "  Ulo¾it desktop..."
+msgstr "  Ulo‘it desktop..."
 
 #: desk/desk_rsc.c
 msgid "  Blitter"
@@ -535,11 +535,11 @@ msgstr "  Cache"
 
 #: desk/desk_rsc.c
 msgid "Read/Write"
-msgstr "Ètení/zápis"
+msgstr "€ten¡/z pis"
 
 #: desk/desk_rsc.c
 msgid "Read-Only"
-msgstr "Jen ètení"
+msgstr "Jen ‡ten¡"
 
 #: desk/desk_rsc.c
 msgid "DISK INFORMATION"
@@ -551,31 +551,31 @@ msgstr "Verze"
 
 #: desk/desk_rsc.c
 msgid "Copyright \275 2001-"
-msgstr "Copyright (C) 2001-"
+msgstr "Copyright \275 2001-"
 
 #: desk/desk_rsc.c
 msgid "The EmuTOS development team"
-msgstr "Vıvojovı tım EmuTOSu"
+msgstr "V˜vojov˜ t˜m EmuTOSu"
 
 #: desk/desk_rsc.c
 msgid "Based on 'GPLed' sources"
-msgstr "Zalo¾eno na 'GPL' zdrojích"
+msgstr "Zalo‘eno na 'GPL' zdroj¡ch"
 
 #: desk/desk_rsc.c
 msgid "\275 1987 Digital Research, Inc."
-msgstr "(C) 1987 Digital Research, Inc."
+msgstr "\275 1987 Digital Research, Inc."
 
 #: desk/desk_rsc.c
 msgid "\275 1999 Caldera Thin Clients, Inc."
-msgstr "(C) 1999 Caldera Thin Clients, Inc."
+msgstr "\275 1999 Caldera Thin Clients, Inc."
 
 #: desk/desk_rsc.c
 msgid "\275 2001 Lineo, Inc."
-msgstr "(C) 2001 Lineo, Inc."
+msgstr "\275 2001 Lineo, Inc."
 
 #: desk/desk_rsc.c
 msgid "EmuTOS is distributed under the GPL"
-msgstr "EmuTOS je ¹íøen pod licencí GPL"
+msgstr "EmuTOS je ¨¡©en pod licenc¡ GPL"
 
 #: desk/desk_rsc.c
 msgid "See doc\\license.txt for details"
@@ -595,7 +595,7 @@ msgstr "INSTALOVAT IKONU NA PLOCHU"
 
 #: desk/desk_rsc.c
 msgid "Item type:"
-msgstr "Typ polo¾ky:"
+msgstr "Typ polo‘ky:"
 
 #: desk/desk_rsc.c
 msgid "Drive"
@@ -603,11 +603,11 @@ msgstr "Jednotka"
 
 #: desk/desk_rsc.c
 msgid "Trash can"
-msgstr "Ko¹"
+msgstr "Ko¨"
 
 #: desk/desk_rsc.c
 msgid "Printer"
-msgstr "Tiskárna"
+msgstr "Tisk rna"
 
 #: desk/desk_rsc.c
 msgid "Icon:"
@@ -635,7 +635,7 @@ msgstr "Typ aplikace:"
 
 #: desk/desk_rsc.c
 msgid "Default dir:"
-msgstr "Adresáø:"
+msgstr "Adres ©:"
 
 #: desk/desk_rsc.c
 msgid "Application"
@@ -651,15 +651,15 @@ msgstr "Parametr:"
 
 #: desk/desk_rsc.c
 msgid "Full path"
-msgstr "Plná cesta"
+msgstr "Pln  cesta"
 
 #: desk/desk_rsc.c
 msgid "File name"
-msgstr "Jen jméno"
+msgstr "Jen jm‚no"
 
 #: desk/desk_rsc.c
 msgid "NAME CONFLICT DURING COPY"
-msgstr "KONFLIKT JMEN BÌHEM KOPÍROVÁNÍ"
+msgstr "KONFLIKT JMEN B‰HEM KOP‹ROVN‹"
 
 #: desk/desk_rsc.c
 msgid "Stop"
@@ -667,7 +667,7 @@ msgstr "Zastavit"
 
 #: desk/desk_rsc.c
 msgid "NEW FOLDER"
-msgstr "NOVİ ADRESÁØ"
+msgstr "NOV ADRES"
 
 #: desk/desk_rsc.c
 msgid "SEARCH FILE"
@@ -679,19 +679,19 @@ msgstr "VYTISKNOUT SOUBOR"
 
 #: desk/desk_rsc.c
 msgid "SET PREFERENCES"
-msgstr "NASTAVENÍ"
+msgstr "NASTAVEN‹"
 
 #: desk/desk_rsc.c
 msgid "Confirm deletes:"
-msgstr "Potvrzovat mazání:"
+msgstr "Potvrzovat maz n¡:"
 
 #: desk/desk_rsc.c
 msgid "Confirm copies:"
-msgstr "Potvrzovat kopírování:"
+msgstr "Potvrzovat kop¡rov n¡:"
 
 #: desk/desk_rsc.c
 msgid "Confirm overwrites:"
-msgstr "Potvrzovat pøepsání:"
+msgstr "Potvrzovat p©eps n¡:"
 
 #: desk/desk_rsc.c
 msgid "Double-click speed:"
@@ -699,11 +699,11 @@ msgstr "Rychlost dvojkliku:"
 
 #: desk/desk_rsc.c
 msgid "Time format:"
-msgstr "Formát èasu:"
+msgstr "Form t ‡asu:"
 
 #: desk/desk_rsc.c
 msgid "Default"
-msgstr "Vıchozí"
+msgstr "V˜choz¡"
 
 #: desk/desk_rsc.c
 msgid "12H"
@@ -715,7 +715,7 @@ msgstr "24H"
 
 #: desk/desk_rsc.c
 msgid "Date format:"
-msgstr "Formát data:"
+msgstr "Form t data:"
 
 #: desk/desk_rsc.c
 msgid "MDY"
@@ -727,7 +727,7 @@ msgstr "DMR"
 
 #: desk/desk_rsc.c
 msgid "SET FILE MASK"
-msgstr "NASTAVIT MASKU SOUBORÙ"
+msgstr "NASTAVIT MASKU SOUBOR¦"
 
 #: desk/desk_rsc.c
 msgid "DESKTOP CONFIGURATION"
@@ -735,55 +735,55 @@ msgstr "KONFIGURACE DESKTOPU"
 
 #: desk/desk_rsc.c
 msgid "Function keys:"
-msgstr "Funkèní klávesy:"
+msgstr "Funk‡n¡ kl vesy:"
 
 #: desk/desk_rsc.c
 msgid "Menu shortcut keys:"
-msgstr "Klávesové zkratky:"
+msgstr "Kl vesov‚ zkratky:"
 
 #: desk/desk_rsc.c
 msgid "Clear all"
-msgstr "Vymazat v¹e"
+msgstr "Vymazat v¨e"
 
 #: desk/desk_rsc.c
 msgid "SET SCREEN RESOLUTION"
-msgstr "ROZLI©ENÍ OBRAZOVKY"
+msgstr "ROZLI›EN‹ OBRAZOVKY"
 
 #: desk/desk_rsc.c
 msgid "ST Low"
-msgstr "ST nízké"
+msgstr "ST n¡zk‚"
 
 #: desk/desk_rsc.c
 msgid "ST Medium"
-msgstr "ST støední"
+msgstr "ST st©edn¡"
 
 #: desk/desk_rsc.c
 msgid "ST High"
-msgstr "ST vysoké"
+msgstr "ST vysok‚"
 
 #: desk/desk_rsc.c
 msgid "TT Low"
-msgstr "TT nízké"
+msgstr "TT n¡zk‚"
 
 #: desk/desk_rsc.c
 msgid "TT Medium"
-msgstr "TT støední"
+msgstr "TT st©edn¡"
 
 #: desk/desk_rsc.c
 msgid "High"
-msgstr "Vysoké"
+msgstr "Vysok‚"
 
 #: desk/desk_rsc.c
 msgid "Medium"
-msgstr "Støední"
+msgstr "St©edn¡"
 
 #: desk/desk_rsc.c
 msgid "Low"
-msgstr "Nízké"
+msgstr "N¡zk‚"
 
 #: desk/desk_rsc.c
 msgid "ST Compatible"
-msgstr "ST kompatibilní"
+msgstr "ST kompatibiln¡"
 
 #: desk/desk_rsc.c
 msgid "INSTALL WINDOW ICON"
@@ -791,7 +791,7 @@ msgstr "INSTALOVAT IKONU OKNA"
 
 #: desk/desk_rsc.c
 msgid "Folder"
-msgstr "Adresáø"
+msgstr "Adres ©"
 
 #: desk/desk_rsc.c
 msgid "File"
@@ -803,27 +803,31 @@ msgstr "Pouze monochrom"
 
 #: desk/desk_rsc.c
 msgid "FORMAT FLOPPY DISKETTE"
-msgstr "FORMÁTOVAT FLOPPY DISK"
+msgstr "FORMTOVAT FLOPPY DISK"
 
 #: desk/desk_rsc.c
-msgid "Single sided"
-msgstr "Jednostrannì"
+msgid "SS 360 K"
+msgstr "SS 360 K"
 
 #: desk/desk_rsc.c
-msgid "Double sided"
-msgstr "Oboustrannì"
+msgid "DS 720 K"
+msgstr "DS 720 K"
 
 #: desk/desk_rsc.c
-msgid "High density"
-msgstr "Vysoká hustota"
+msgid "DS 800 K"
+msgstr "DS 800 K"
+
+#: desk/desk_rsc.c
+msgid "HD 1.44 M"
+msgstr "HD 1.44 M"
 
 #: desk/desk_rsc.c
 msgid "SET BACKGROUND"
-msgstr "NASTAVIT POZADÍ"
+msgstr "NASTAVIT POZAD‹"
 
 #: desk/desk_rsc.c
 msgid "Select:"
-msgstr "Vıbìr:"
+msgstr "V˜bˆr:"
 
 #: desk/desk_rsc.c
 msgid "Desktop"
@@ -839,11 +843,11 @@ msgstr "Barva:"
 
 #: desk/desk_rsc.c
 msgid " %ld bytes used in %d items."
-msgstr " %ld bytù v %d polo¾kách."
+msgstr " %ld byt– v %d polo‘k ch."
 
 #: desk/desk_rsc.c
 msgid " %ld bytes used in %d selected items."
-msgstr " %ld bytù v %d vybranıch polo¾kách."
+msgstr " %ld byt– v %d vybran˜ch polo‘k ch."
 
 #: desk/desk_rsc.c
 msgid "FILE INFORMATION"
@@ -851,15 +855,15 @@ msgstr "INFORMACE O SOUBORU"
 
 #: desk/desk_rsc.c
 msgid "FOLDER INFORMATION"
-msgstr "INFORMACE O ADRESÁØI"
+msgstr "INFORMACE O ADRESI"
 
 #: desk/desk_rsc.c
 msgid "COPY FILE(S)"
-msgstr "KOPÍROVAT SOUBOR(Y)"
+msgstr "KOP‹ROVAT SOUBOR(Y)"
 
 #: desk/desk_rsc.c
 msgid "MOVE FILE(S)"
-msgstr "PØESUNOUT SOUBOR(Y)"
+msgstr "PESUNOUT SOUBOR(Y)"
 
 #: desk/desk_rsc.c
 msgid "DELETE FILE(S)"
@@ -871,15 +875,15 @@ msgstr "DISK"
 
 #: desk/desk_rsc.c
 msgid "TRASH"
-msgstr "KO©"
+msgstr "KO›"
 
 #: desk/desk_rsc.c
 msgid "PRINTER"
-msgstr "TISKÁRNA"
+msgstr "TISKRNA"
 
 #: desk/desk_rsc.c
 msgid "-More-"
-msgstr "-Pokraèování-"
+msgstr "-Pokra‡ov n¡-"
 
 #: desk/desk_rsc.c
 msgid "-End of file-"
@@ -887,11 +891,11 @@ msgstr "-Konec souboru-"
 
 #: desk/desk_rsc.c
 msgid "-File read error-"
-msgstr "-Chyba ètení souboru-"
+msgstr "-Chyba ‡ten¡ souboru-"
 
 #: desk/desk_rsc.c
 msgid "Locate item"
-msgstr "Vyhledat polo¾ku"
+msgstr "Vyhledat polo‘ku"
 
 #: desk/desk_rsc.c
 msgid "Select .INF file"
@@ -902,7 +906,7 @@ msgid "[2]["
 "Switch resolution?]"
 "[ Yes | No ]"
 msgstr "[2]["
-"Zmìnit rozli¹ení?]"
+"Zmˆnit rozli¨en¡?]"
 "[ Ano | Ne ]"
 
 #: desk/desk_rsc.c
@@ -912,7 +916,7 @@ msgid "[2]["
 msgstr "[2]["
 "Zobrazit nebo vytisknout|"
 "tento dokument?]"
-"[Zobrazit|Vytisknout|Zru¹it]"
+"[Zobrazit|Vytisknout|Zru¨it]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -920,7 +924,7 @@ msgid "[1]["
 "[ Retry | Cancel ]"
 msgstr "[1]["
 "Chyba tisku!]"
-"[ Opakovat | Zru¹it ]"
+"[ Opakovat | Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -928,7 +932,7 @@ msgid "[1]["
 "associated application.]"
 "[  OK  ]"
 msgstr "[1]["
-"Tento typ dokumentu nemá|"
+"Tento typ dokumentu nem |"
 "asociovanou aplikaci.]"
 "[  OK  ]"
 
@@ -940,9 +944,9 @@ msgid "[1]["
 "using.]"
 "[  OK  ]"
 msgstr "[1]["
-"GEM desktop nemá více oken.|"
-"Prosím zavøete okno,|"
-"co nepou¾íváte.]"
+"GEM desktop nem  v¡ce oken.|"
+"Pros¡m zav©ete okno,|"
+"co nepou‘¡v te.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -950,15 +954,15 @@ msgid "[1]["
 "Illegal directory operation!]"
 "[ Skip | Abort ]"
 msgstr "[1]["
-"Neplatná adresáøová operace!]"
-"[Pøeskoèit| Zru¹it ]"
+"Neplatn  adres ©ov  operace!]"
+"[P©esko‡it| Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "Illegal operation!]"
 "[  OK  ]"
 msgstr "[1]["
-"Neplatná operace!]"
+"Neplatn  operace!]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -966,7 +970,7 @@ msgid "[2]["
 "Abort this operation?]"
 "[ Yes | No ]"
 msgstr "[2]["
-"Pøeru¹it operaci?]"
+"P©eru¨it operaci?]"
 "[ Ano | Ne ]"
 
 #: desk/desk_rsc.c
@@ -976,7 +980,7 @@ msgid "[2]["
 "[Yes| No ]"
 msgstr "[2]["
 "Opravdu chcete smazat|"
-"v¹echny soubory na disku %c: ?]"
+"v¨echny soubory na disku %c: ?]"
 "[Ano| Ne ]"
 
 #: desk/desk_rsc.c
@@ -987,8 +991,8 @@ msgid "[1]["
 "[  OK  ]"
 msgstr "[1]["
 "Na plochu nelze|"
-"nainstalovat více ikon|"
-"nebo aplikací.]"
+"nainstalovat v¡ce ikon|"
+"nebo aplikac¡.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -998,10 +1002,10 @@ msgid "[2]["
 "with a new name, or cancel.]"
 "[Cancel|Retry]"
 msgstr "[2]["
-"Nelze vytvoøit adresáø|"
-"s tímto jménem. Prosím zadejte|"
-"jiné jméno, nebo zru¹te.]"
-"[Zru¹it|Opakovat]"
+"Nelze vytvo©it adres ©|"
+"s t¡mto jm‚nem. Pros¡m zadejte|"
+"jin‚ jm‚no, nebo zru¨te.]"
+"[Zru¨it|Opakovat]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1010,7 +1014,7 @@ msgid "[1]["
 "operation.]"
 "[  OK  ]"
 msgstr "[1]["
-"Na disku %c: není dost místa|"
+"Na disku %c: nen¡ dost m¡sta|"
 "pro tuto operaci.]"
 "[  OK  ]"
 
@@ -1021,9 +1025,9 @@ msgid "[3]["
 "down the directory path.]"
 "[  OK  ]"
 msgstr "[3]["
-"Nelze vytváøet èi pøistupovat|"
-"k adresáøùm takto hluboko|"
-"v adresáøové cestì.]"
+"Nelze vytv ©et ‡i p©istupovat|"
+"k adres ©–m takto hluboko|"
+"v adres ©ov‚ cestˆ.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1034,10 +1038,10 @@ msgid "[3]["
 "is too long.]"
 "[  OK  ]"
 msgstr "[3]["
-"Nelze vytváøet èi pøistupovat|"
-"k souborùm èi adresáøùm s tímto|"
-"jménem, proto¾e cesta souboru|"
-"je pøíli¹ dlouhá.]"
+"Nelze vytv ©et ‡i p©istupovat|"
+"k soubor–m ‡i adres ©–m s t¡mto|"
+"jm‚nem, proto‘e cesta souboru|"
+"je p©¡li¨ dlouh .]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1047,9 +1051,9 @@ msgid "[1]["
 "or folders.]"
 "[  OK  ]"
 msgstr "[1]["
-"%s se pou¾ívá pro|"
-"trvalé smazání souborù|"
-"nebo adresáøù.]"
+"%s se pou‘¡v  pro|"
+"trval‚ smaz n¡ soubor–|"
+"nebo adres ©–.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1059,7 +1063,7 @@ msgid "[1]["
 "[  OK  ]"
 msgstr "[1]["
 "%s|"
-"je tiskárna.]"
+"je tisk rna.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1069,8 +1073,8 @@ msgid "[1]["
 "Desktop.]"
 "[  OK  ]"
 msgstr "[1]["
-"Na plochu nelze pøetáhnout,|"
-"soubory nebo adresáøe.]"
+"Na plochu nelze p©et hnout,|"
+"soubory nebo adres ©e.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1078,8 +1082,8 @@ msgid "[2]["
 "Save Desktop?]"
 "[  OK  |Cancel]"
 msgstr "[2]["
-"Ulo¾it stav desktopu?]"
-"[  OK  |Zru¹it]"
+"Ulo‘it stav desktopu?]"
+"[  OK  |Zru¨it]"
 
 #: desk/desk_rsc.c
 msgid "[2]["
@@ -1089,15 +1093,15 @@ msgid "[2]["
 msgstr "[2]["
 "Chcete odstranit ikony|"
 "nebo smazat soubory?]"
-"[Ikony|Soubory|Zru¹it]"
+"[Ikony|Soubory|Zru¨it]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "Invalid function key value.]"
 "[  OK  ]"
 msgstr "[1]["
-"Neplatná hodnota|"
-"funkèní klávesy.]"
+"Neplatn  hodnota|"
+"funk‡n¡ kl vesy.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1106,9 +1110,9 @@ msgid "[2]["
 "Do you want to reassign it?]"
 "[  OK  |Cancel]"
 msgstr "[2]["
-"Funkèní klávesa je obsazena.|"
-"Chcete ji zmìnit?]"
-"[  OK  |Zru¹it]"
+"Funk‡n¡ kl vesa je obsazena.|"
+"Chcete ji zmˆnit?]"
+"[  OK  |Zru¨it]"
 
 #: desk/desk_rsc.c
 msgid "[3]["
@@ -1117,7 +1121,7 @@ msgid "[3]["
 "You must reboot.]"
 "[  OK  ]"
 msgstr "[3]["
-"Nedostatek pamìti|"
+"Nedostatek pamˆti|"
 "k inicializaci EmuDesku.|"
 "Nutno restartovat.]"
 "[  OK  ]"
@@ -1131,23 +1135,23 @@ msgid "[2]["
 msgstr "[2]["
 "%s nebyl nalezen.|"
 "Chcete odstranit ikonu|"
-"nebo vyhledat polo¾ku?]"
-"[Odstranit|Vyhledat|Zru¹it]"
+"nebo vyhledat polo‘ku?]"
+"[Odstranit|Vyhledat|Zru¨it]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "Please select icon type.]"
 "[Desktop|Window|Cancel]"
 msgstr "[1]["
-"Prosím vyberte typ ikony.]"
-"[Plocha|Okno|Zru¹it]"
+"Pros¡m vyberte typ ikony.]"
+"[Plocha|Okno|Zru¨it]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "No matching file type.]"
 "[  OK  ]"
 msgstr "[1]["
-"Nesouhlasí typ souboru.]"
+"Nesouhlas¡ typ souboru.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1157,10 +1161,10 @@ msgid "[3]["
 "or unusable.]"
 "[ Retry | Abort ]"
 msgstr "[3]["
-"Chyba pøi formátování. Disketa|"
-"mù¾e bıt chránìna proti zápisu|"
-"nebo je ji nelze pou¾ít.]"
-"[ Opakovat | Zru¹it ]"
+"Chyba p©i form tov n¡. Disketa|"
+"m–‘e b˜t chr nˆna proti z pisu|"
+"nebo je ji nelze pou‘¡t.]"
+"[ Opakovat | Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1169,8 +1173,8 @@ msgid "[1]["
 "[ Continue | Quit ]"
 msgstr "[1]["
 "Na disku je k dispozici|"
-"%ld u¾ivatelskıch bytù.]"
-"[Pokraèovat| Konec ]"
+"%ld u‘ivatelsk˜ch byt–.]"
+"[Pokra‡ovat| Konec ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1178,14 +1182,14 @@ msgid "[1]["
 "[ Cancel ]"
 msgstr "[1]["
 "Disk %s: neexistuje.]"
-"[ Zru¹it ]"
+"[ Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "No drive identifier.]"
 "[ Retry ]"
 msgstr "[1]["
-"®ádnı identifikátor disku.]"
+"’ dn˜ identifik tor disku.]"
 "[ Opakovat ]"
 
 #: desk/desk_rsc.c
@@ -1196,7 +1200,7 @@ msgid "[1]["
 msgstr "[1]["
 "Nelze smazat soubor|"
 "%s]"
-"[Pøeskoèit| Opakovat | Zru¹it ]"
+"[P©esko‡it| Opakovat | Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1204,16 +1208,16 @@ msgid "[1]["
 "%s]"
 "[ Skip | Retry | Abort ]"
 msgstr "[1]["
-"Nelze smazat adresáø|"
+"Nelze smazat adres ©|"
 "%s]"
-"[Pøeskoèit| Opakovat | Zru¹it ]"
+"[P©esko‡it| Opakovat | Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "Not enough memory.]"
 "[  OK  ]"
 msgstr "[1]["
-"Nedostatek pamìti.]"
+"Nedostatek pamˆti.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1230,9 +1234,9 @@ msgid "[1]["
 "%s]"
 "[ Skip | Retry | Abort ]"
 msgstr "[1]["
-"Nelze otevøít soubor|"
+"Nelze otev©¡t soubor|"
 "%s]"
-"[Pøeskoèit| Opakovat | Zru¹it ]"
+"[P©esko‡it| Opakovat | Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1240,9 +1244,9 @@ msgid "[1]["
 "%s]"
 "[ Skip | Retry | Abort ]"
 msgstr "[1]["
-"Nelze vytvoøit soubor|"
+"Nelze vytvo©it soubor|"
 "%s]"
-"[Pøeskoèit| Opakovat | Zru¹it ]"
+"[P©esko‡it| Opakovat | Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1250,9 +1254,9 @@ msgid "[1]["
 "%s]"
 "[ Skip | Abort ]"
 msgstr "[1]["
-"Nelze èíst soubor|"
+"Nelze ‡¡st soubor|"
 "%s]"
-"[Pøeskoèit| Zru¹it ]"
+"[P©esko‡it| Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1262,15 +1266,15 @@ msgid "[1]["
 msgstr "[1]["
 "Nelze zapsat soubor|"
 "%s]"
-"[Pøeskoèit| Zru¹it ]"
+"[P©esko‡it| Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "Rename error!]"
 "[ Retry | Cancel ]"
 msgstr "[1]["
-"Chyba pøejmenování!]"
-"[ Opakovat | Zru¹it ]"
+"Chyba p©ejmenov n¡!]"
+"[ Opakovat | Zru¨it ]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
@@ -1278,8 +1282,8 @@ msgid "[1]["
 "directory.]"
 "[  OK  ]"
 msgstr "[1]["
-"Selhalo nastavení|"
-"vıchozího adresáøe.]"
+"Selhalo nastaven¡|"
+"v˜choz¡ho adres ©e.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1287,7 +1291,7 @@ msgid "[1]["
 "Illegal .INF file format.]"
 "[  OK  ]"
 msgstr "[1]["
-"Neplatnı formát souboru .INF.]"
+"Neplatn˜ form t souboru .INF.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1295,15 +1299,15 @@ msgid "[2]["
 "Continue to search?]"
 "[  OK  |Cancel]"
 msgstr "[2]["
-"Pokraèovat ve hledání?]"
-"[  OK  |Zru¹it]"
+"Pokra‡ovat ve hled n¡?]"
+"[  OK  |Zru¨it]"
 
 #: desk/desk_rsc.c
 msgid "[1]["
 "No more files.]"
 "[  OK  ]"
 msgstr "[1]["
-"®ádné dal¹í soubory.]"
+"’ dn‚ dal¨¡ soubory.]"
 "[  OK  ]"
 
 #: desk/desk_rsc.c
@@ -1312,9 +1316,9 @@ msgid "[2]["
 "Do you want to reassign it?]"
 "[  OK  |Cancel]"
 msgstr "[2]["
-"Klávesa je ji¾ pou¾ita.|"
-"Chcete ji zmìnit?]"
-"[  OK  |Zru¹it]"
+"Kl vesa je ji‘ pou‘ita.|"
+"Chcete ji zmˆnit?]"
+"[  OK  |Zru¨it]"
 
 #: cli/cmdint.c
 msgid "Copy <filespec> ... to standard output"

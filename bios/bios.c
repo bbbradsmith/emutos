@@ -2,7 +2,7 @@
  *  bios.c - C portion of BIOS initialization and front end
  *
  * Copyright (C) 2001 Lineo, Inc.
- * Copyright (C) 2001-2024 The EmuTOS development team
+ * Copyright (C) 2001-2026 The EmuTOS development team
  *
  * Authors:
  *  SCC     Steve C. Cavender
@@ -49,6 +49,7 @@
 #include "vectors.h"
 #include "asm.h"
 #include "chardev.h"
+#include "disk.h"
 #include "blkdev.h"
 #include "parport.h"
 #include "serport.h"
@@ -397,6 +398,32 @@ static void bios_init(void)
     set_sr(0x2000);
 #endif
 
+#if defined(MACHINE_ARANYM) || defined(TARGET_1024)
+    /* ARAnyM 1.1.0 loads only the first half of 1024k ROMs.
+     * Detect this situation and warn the user.
+     * This method is ugly, but safe for releases as they are thoroughly tested.
+     */
+    if (IS_ARANYM && ((ULONG)_edata > 0x00e80000ul) && ULONG_AT(0x00e80000) == 0)
+    {
+        kcprintf(
+            "\r\n"
+            "ERROR: This 1024k ROM isn't supported by your ARAnyM version.\r\n"
+            "Please use etos512*.img instead, until next ARAnyM release.\r\n"
+        );
+
+        /* Don't use halt() on ARAnyM, as it causes an infinite loop
+           with the message: "STOPed with interrupts disabled, exiting;".
+           FIXME: Fix halt() instead.
+        */
+        for(;;)
+        {
+#if USE_STOP_INSN_TO_FREE_HOST_CPU
+            stop_until_interrupt();
+#endif
+        }
+    }
+#endif
+
     /* Initialize the RS-232 port(s) */
     KDEBUG(("chardev_init()\n"));
     chardev_init();     /* Initialize low-memory bios vectors */
@@ -488,12 +515,39 @@ static void bios_init(void)
 #if CONF_WITH_NOVA
     /* Detect and initialize a Nova card, skip if Ctrl is pressed */
     if (HAS_NOVA && !(kbshift(-1) & MODE_CTRL)) {
+        WORD cache_state = 0;
         KDEBUG(("init_nova()\n"));
+
+        /*
+         * On the Falcon, the Nova HW registers are in cached memory.
+         * Thus, initialization only works when cache is disabled.
+         */
+        if (HAS_VIDEL) {
+            cache_state = get_cache();
+            set_cache(0);
+        }
+
         if (init_nova()) {
+
+#if CONF_WITH_BLITTER
+            /* On the Falcon, the Blitter cannot access Nova video memory.
+             * Therefore, disable the Blitter entirely, to prevent it from
+             * being used.
+             */
+            if (HAS_VIDEL) {
+                has_blitter = 0;
+            }
+#endif
+
             set_rez_hacked();   /* also reinitializes the vt52 console */
         }
+
+        /* Restore old cache state on the Falcon */
+        if (HAS_VIDEL) {
+            set_cache(cache_state);
+        }
     }
-#endif
+#endif /* CONF_WITH_NOVA */
 
 #if CONF_WITH_NLS
     KDEBUG(("nls_init()\n"));
@@ -544,6 +598,10 @@ static void bios_init(void)
         }
     }
 #endif
+
+    /* Boot hard disks */
+    KDEBUG(("disk_try_dmaboot()\n"));
+    disk_try_dmaboot();
 
     KDEBUG(("bios_init() end\n"));
 }

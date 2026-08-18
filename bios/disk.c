@@ -1,7 +1,7 @@
 /*
  * disk.c - disk routines
  *
- * Copyright (C) 2001-2024 The EmuTOS development team
+ * Copyright (C) 2001-2026 The EmuTOS development team
  *
  * Authors:
  *  PES   Petr Stehlik
@@ -48,6 +48,42 @@ typedef struct {
     UWORD bootsig;
 } MBR;
 
+typedef struct {
+    ULONG lba_low;
+    ULONG lba_high;
+} LBA64;
+
+typedef struct {
+    UBYTE signature[8];
+    ULONG version;
+    ULONG header_size;
+    ULONG header_crc;
+    ULONG fill0;
+    LBA64 current_lba;
+    LBA64 backup_lba;
+    LBA64 first_usable_lba;
+    LBA64 last_usable_lba;
+    UBYTE disk_guid[16];
+    LBA64 table_lba;
+    ULONG table_entries;
+    ULONG table_entry_size;
+    ULONG table_crc;
+} GPT_HEADER;
+
+typedef struct {
+    UBYTE parttype_guid[16];
+    UBYTE part_guid[16];
+    LBA64 first_lba;
+    LBA64 last_lba;
+    LBA64 attribute_flags;
+    UBYTE part_name[72];
+} GPT_ENTRY;
+
+typedef struct {
+    UBYTE parttype_guid[16];
+    char  parttype[3];
+} GPT_MAP;
+
 /*==== Global variables ===================================================*/
 
 UNIT units[UNITSNUM];
@@ -58,25 +94,104 @@ int ultrasatan_id;
 #endif
 
 /*==== Internal declarations ==============================================*/
+#if !CONF_WITH_EXTERNAL_DISK_DRIVER
 static int atari_partition(UWORD unit,LONG *devices_available);
+#endif
 #if DETECT_NATIVE_FEATURES
 static LONG natfeats_inquire(UWORD unit, ULONG *blocksize, ULONG *deviceflags, char *productname, UWORD stringlen);
 #endif
 static LONG internal_inquire(UWORD unit, ULONG *blocksize, ULONG *deviceflags, char *productname, UWORD stringlen);
+
+/* scan disk majors in the following order */
+static const int majors[] =
+{
+#if CONF_WITH_IDE
+    16, 18, 17, 19, 20, 22, 21, 23,     /* IDE primary/secondary */
+#endif
+#if CONF_WITH_SCSI || CONF_WITH_ARANYM
+    8, 9, 10, 11, 12, 13, 14, 15,       /* SCSI */
+#endif
+#if CONF_WITH_ACSI
+    0, 1, 2, 3, 4, 5, 6, 7,             /* ACSI */
+#endif
+#if CONF_WITH_SDMMC
+    24, 25, 26, 27, 28, 29, 30, 31      /* SD/MMC */
+#endif
+};
+
+/* implementation of Atari TOS API for executing root sectors */
+static void dmaboot(UWORD unit, void *bootcode)
+{
+    __asm volatile(
+    "lea     -36(sp),sp\n\t"
+    "movem.l d3-d7/a3-a6,(sp)\n\t"
+    "moveq   #0,d4\n\t"
+    /* unit number */
+    "move.w  %0,d4\n\t"
+    /* ACSI unit number for old AHDI versions */
+    "move.l  d4,d7\n\t"
+    "lsl.l   #5,d7\n\t"
+    /* magic number 'DMAr' */
+    "move.l  #0x444D4172,d3\n\t"
+    /* A2 is not a documented part of the TOS API. However, the ACSI2STM
+     * GEMDRIVE boot code expects A2 to point to some writable scratch memory.
+     */
+    "lea     0x200(%1),a2\n\t"
+    "jsr     (%1)\n\t"
+    "movem.l (sp),d3-d7/a3-a6\n\t"
+    "lea     36(sp),sp"
+    : : "r"(unit-NUMFLOPPIES), "a"(bootcode)
+    : "d0","d1","d2","a0","a1","a2", "memory");
+}
+
+/*
+ * scan hard disks found in disk_init_all with no partitions, and execute
+ * the first bootable root sector.
+ */
+void disk_try_dmaboot(void)
+{
+    int i;
+    LONG rc;
+
+    for(i = 0; i < ARRAY_SIZE(majors); i++) {
+        UWORD unit = NUMFLOPPIES + majors[i];
+        /* valid disk with no identified partitions? */
+        if (units[unit].valid && (units[unit].drivemap == 0)) {
+            KDEBUG(("disk_try_dmaboot(): trying unit %d\n", unit));
+            /* read root sector */
+            rc = disk_rw(unit, RW_READ, 0, 1, dskbufp);
+            if (rc == E_OK)
+            {
+                /* calculate checksum */
+                if (compute_cksum((UWORD*)dskbufp) == 0x1234)
+                {
+                    KDEBUG(("disk_try_dmaboot(): executing unit %d bootsector\n", unit));
+                    dmaboot(unit, dskbufp);
+                    /* only boot first bootable disk */
+                    break;
+                }
+            }
+        }
+    }
+}
 
 /*
  * scans one unit and adds all found partitions
  */
 static void disk_init_one(UWORD unit,LONG *devices_available)
 {
-    LONG bitmask, devs, rc;
+    UNIT *punit = &units[unit];
+    LONG rc;
+    WORD shift;
+    int i;
     ULONG blocksize = SECTOR_SIZE;
     ULONG blocks = 0;
-    ULONG device_flags;
-    WORD shift;
-    UNIT *punit = &units[unit];
-    int i, n;
     char productname[40];
+    ULONG device_flags;
+#if !CONF_WITH_EXTERNAL_DISK_DRIVER
+    int n;
+    LONG bitmask, devs;
+#endif
 
     punit->valid = 0;
     punit->features = 0;
@@ -96,10 +211,20 @@ static void disk_init_one(UWORD unit,LONG *devices_available)
         /* Try our internal drivers */
         for (i = 0; i <= HD_DETECT_RETRIES; i++)
         {
-            rc = internal_inquire(unit, NULL, &device_flags, productname, sizeof productname);
-            if (rc == 0)
+            /* identify valid devices by reading root sector */
+            rc = disk_rw(unit, RW_READ, 0, 1, dskbufp);
+            if (rc == 0) {
+                punit->valid = 1;
                 break;
+            }
         }
+        /* if disk_rw failed with 'unknown device' there is no point in continuing */
+        if (rc == EUNDEV) {
+            return;
+        }
+
+        /* only use internal driver for disks that respond to INQUIRE */
+        rc = internal_inquire(unit, NULL, &device_flags, productname, sizeof productname);
         if (rc) {
             KDEBUG(("disk_init_one(): internal_inquire(%d) returned %ld\n",unit,rc));
             return;
@@ -126,6 +251,8 @@ static void disk_init_one(UWORD unit,LONG *devices_available)
 
     if (device_flags & XH_TARGET_REMOVABLE)
         punit->features |= UNIT_REMOVABLE;
+
+#if !CONF_WITH_EXTERNAL_DISK_DRIVER
 
     /* scan for ATARI partitions on this harddrive */
     devs = *devices_available;  /* remember initial set */
@@ -159,6 +286,8 @@ static void disk_init_one(UWORD unit,LONG *devices_available)
     }
 #endif /* CONF_WITH_ULTRASATAN_CLOCK */
 
+#endif /* ! CONF_WITH_EXTERNAL_DISK_DRIVER */
+
 }
 
 /*
@@ -174,22 +303,6 @@ LONG    drvrem;
  */
 void disk_init_all(void)
 {
-    /* scan disk majors in the following order */
-    static const int majors[] =
-    {
-#if CONF_WITH_IDE
-        16, 18, 17, 19, 20, 22, 21, 23,     /* IDE primary/secondary */
-#endif
-#if CONF_WITH_SCSI || CONF_WITH_ARANYM
-        8, 9, 10, 11, 12, 13, 14, 15,       /* SCSI */
-#endif
-#if CONF_WITH_ACSI
-        0, 1, 2, 3, 4, 5, 6, 7,             /* ACSI */
-#endif
-#if CONF_WITH_SDMMC
-        24, 25, 26, 27, 28, 29, 30, 31      /* SD/MMC */
-#endif
-    };
     int i;
     LONG devices_available = 0L;
     LONG bitmask;
@@ -348,6 +461,7 @@ void disk_rescan(UWORD unit)
 
 #define ICD_PARTS
 
+#if !CONF_WITH_EXTERNAL_DISK_DRIVER
 /* check if a partition entry looks valid -- Atari format is assumed if at
    least one of the primary entries is ok this way */
 static int VALID_PARTITION(struct partition_info *pi, unsigned long hdsiz)
@@ -436,16 +550,17 @@ static ULONG check_for_no_partitions(UBYTE *sect)
     return size;
 }
 
-
 #define MAXPHYSSECTSIZE 512
 typedef union
 {
     UBYTE sect[MAXPHYSSECTSIZE];
     struct rootsector rs;
     MBR mbr;
+    GPT_HEADER gpt_header;
+    GPT_ENTRY gpt_entries[4];
 } PHYSSECT;
 
-PHYSSECT physsect, physsect2;
+static PHYSSECT physsect, physsect2;
 
 #if CONF_WITH_IDE
 
@@ -496,6 +611,119 @@ static BOOL unit_is_byteswapped(UWORD unit)
 
 #endif /* CONF_WITH_IDE */
 
+#if CONF_WITH_GPT_SUPPORT
+
+#define LBA64_OVERFLOW(x) (((x).lba_high) != 0)
+#define LBA64_TO_32(y,x)  do { (y)=(x).lba_low; swpl(y); } while(0)
+
+#define GPT_MBR_TYPE 0xee
+#define GPT_MAGIC "EFI PART"
+
+#define GPT_ATTR_EFI_HIDDEN (0x02ul<<24)    /* bit 1 in little endian */
+
+/*
+ * see https://en.wikipedia.org/w/index.php?title=GUID_Partition_Table&oldid=1312797248#Partition_type_GUIDs
+ * note that the binary representation of GUIDs differs from their textual representation.
+ */
+static const GPT_MAP gpt_map[] =
+{
+    {.parttype_guid = {0xFE,0x5A,0x4E,0x73,0x1A,0xF6,0xE6,0x11,0xBC,0x64,0x92,0x36,0x1F,0x00,0x26,0x71},
+    .parttype = "BGM"},
+    {.parttype_guid = {0xA2,0xA0,0xD0,0xEB,0xE5,0xB9,0x33,0x44,0x87,0xC0,0x68,0xB6,0xB7,0x26,0x99,0xC7},
+    .parttype = "\0D\xE"},
+};
+
+static BOOL map_gpt_to_atari(const GPT_ENTRY* gpt, char* pid)
+{
+    int i;
+    for (i=0; i<ARRAY_SIZE(gpt_map); i++)
+    {
+        if (memcmp(gpt->parttype_guid, gpt_map[i].parttype_guid, sizeof(gpt_map[i].parttype_guid)) == 0)
+        {
+            memcpy(pid, gpt_map[i].parttype, sizeof(gpt_map[i].parttype));
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+/*
+ * process a GUID partition table (GPT)
+ *
+ * returns
+ *  -1  the maximum number of partitions is exceeded
+ *   0  in case of errors
+ *   1  otherwise
+ */
+static WORD process_gpt(UWORD unit, LONG *devices_available)
+{
+    UBYTE *sect = physsect.sect;
+    ULONG next_lba, first_lba, last_lba, n, i;
+    char pid[3];
+
+    /* read GPT and check header */
+    if (disk_rw(unit, RW_READ, 1, 1, sect))
+        return 0;
+
+    if (memcmp(physsect.gpt_header.signature, GPT_MAGIC, sizeof(physsect.gpt_header.signature)) != 0)
+        return 0;
+
+    KINFO(("Found GPT\n"));
+
+    /* for simplicity we only support the default GPT entry size of 128 bytes */
+    if (physsect.gpt_header.table_entry_size != (128ul<<24)) /* 128 in little endian */
+        return 0;
+
+    /* get the start and length of the GPT table */
+    if (LBA64_OVERFLOW(physsect.gpt_header.table_lba))
+        return 0;
+    LBA64_TO_32(next_lba, physsect.gpt_header.table_lba);
+
+    n = physsect.gpt_header.table_entries;
+    swpl(n);
+
+    for (i=0; i<n; i++)
+    {
+        if (i%4 == 0)
+        {
+            /* load next sector */
+            if (disk_rw(unit, RW_READ, next_lba, 1, sect))
+                return 0;
+            next_lba++;
+        }
+
+        /* check if partition type is supported */
+        if (map_gpt_to_atari(&physsect.gpt_entries[i%4], pid))
+        {
+            /* skip 'EFI hidden' partitions, note that the bitmask is little endian */
+            if (physsect.gpt_entries[i%4].attribute_flags.lba_low & GPT_ATTR_EFI_HIDDEN)
+                continue;
+
+            if (LBA64_OVERFLOW(physsect.gpt_entries[i%4].first_lba) ||
+                LBA64_OVERFLOW(physsect.gpt_entries[i%4].last_lba))
+                continue;
+
+            LBA64_TO_32(first_lba, physsect.gpt_entries[i%4].first_lba);
+            LBA64_TO_32(last_lba, physsect.gpt_entries[i%4].last_lba);
+
+            KDEBUG(("Supported GPT partition at entry %lu: start=%lu, end=%lu, type=$%02x%02x%02x\n",
+                    i, first_lba, last_lba, pid[0], pid[1], pid[2]));
+
+            if (add_partition(unit,devices_available,pid,first_lba,last_lba-first_lba+1))
+                return -1;
+        }
+        else
+        {
+            /* avoid complaining about empty entries */
+            if (physsect.gpt_entries[i%4].first_lba.lba_low != 0)
+                KDEBUG(("Unsupported GPT partition at entry %lu\n", i));
+        }
+    }
+    return 1;
+}
+
+#endif /* CONF_WITH_GPT_SUPPORT */
+
 /*
  * process DOS-style MBR
  *
@@ -512,6 +740,12 @@ static WORD process_dos_mbr(UWORD unit, LONG *devices_available)
                                 /*  to traverse the list of linked extended partitions */
     ULONG next_extended;        /* start sector of next extended boot record */
     int i;
+
+#if CONF_WITH_GPT_SUPPORT
+    /* check for protective MBR found in disks with GUID partition table */
+    if (mbr->entry[0].type == GPT_MBR_TYPE)
+        return process_gpt(unit, devices_available);
+#endif
 
     do {
         /* start sector of next extended boot record, if present */
@@ -766,7 +1000,7 @@ static int atari_partition(UWORD unit,LONG *devices_available)
 
     return 1;
 }
-
+#endif /* !CONF_WITH_EXTERNAL_DISK_DRIVER */
 
 /*=========================================================================*/
 
@@ -847,6 +1081,20 @@ static LONG internal_inquire(UWORD unit, ULONG *blocksize, ULONG *deviceflags, c
 }
 
 #if CONF_WITH_XHDI
+
+/*
+ * is this hard disk managed by EmuTOS?
+ */
+BOOL disk_valid_major(UWORD major)
+{
+    UWORD unit = major + NUMFLOPPIES;
+    if (unit < UNITSNUM) {
+        return units[unit].valid != 0;
+    } else {
+        return FALSE;
+    }
+}
+
 /* Get unit information, whatever low-level driver is used. */
 LONG disk_inquire(UWORD unit, ULONG *blocksize, ULONG *deviceflags, char *productname, UWORD stringlen)
 {

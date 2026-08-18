@@ -1,7 +1,7 @@
 /*
  * blkdev.c - BIOS block device functions
  *
- * Copyright (C) 2002-2024 The EmuTOS development team
+ * Copyright (C) 2002-2026 The EmuTOS development team
  *
  * Authors:
  *  MAD     Martin Doering
@@ -35,13 +35,6 @@
 #include "xhdi.h"
 #include "intmath.h"
 
-
-/*
- * undefine the following to enable booting from hard disk.
- * note that this is experimental and, as of march 2015,
- * will cause a crash if used with hard disk drivers ...
- */
-#define DISABLE_HD_BOOT
 
 /*
  * Global variables
@@ -245,10 +238,13 @@ LONG blkdev_boot(void)
     if (bootflags & BOOTFLAG_SKIP_AUTO_ACC)
         return 0;
 
-#ifdef DISABLE_HD_BOOT
-    if (bootdev >= NUMFLOPPIES) /* don't attempt to boot from hard disk */
+    /*
+     * don't attempt to boot the boot sector from hard disk,
+     * hard disk booting (if applicable) is handled by
+     * disk_try_dmaboot().
+     */
+    if (bootdev >= NUMFLOPPIES)
         return 0;
-#endif
 
     /*
      * execute the bootsector code (if present)
@@ -409,7 +405,7 @@ int add_partition(UWORD unit, LONG *devices_available, char id[], ULONG start, U
 
 static LONG blkdev_rwabs(WORD rw, UBYTE *buf, WORD cnt, WORD recnr, WORD dev, LONG lrecnr)
 {
-    int retries = RWABS_RETRIES;
+    int retry_count, retries;
     int unit = dev;
     LONG lcount = cnt;
     LONG retval;
@@ -434,8 +430,7 @@ static LONG blkdev_rwabs(WORD rw, UBYTE *buf, WORD cnt, WORD recnr, WORD dev, LO
     if (recnr != -1)            /* if long offset not used */
         lrecnr = (UWORD)recnr;  /* recnr as unsigned to enable 16-bit recn */
 
-    if (rw & RW_NORETRIES)
-        retries = 1;
+    retry_count = (rw & RW_NORETRIES) ? 1 : RWABS_RETRIES;
 
     /*
      * are we accessing a physical unit or a logical device?
@@ -515,6 +510,7 @@ static LONG blkdev_rwabs(WORD rw, UBYTE *buf, WORD cnt, WORD recnr, WORD dev, LO
         /* split the transfer to 15-bit count blocks (lowlevel functions take WORD count) */
         WORD scount = (lcount > CNTMAX) ? CNTMAX : lcount;
         do {        /* outer loop retries if critical event handler says we should */
+            retries = retry_count;
             do {    /* inner loop automatically retries */
                 retval = (unit<NUMFLOPPIES) ? floppy_rw(rw, buf, scount, lrecnr, geo->spt, geo->sides, unit)
                                             : disk_rw(unit, (rw & ~RW_NOTRANSLATE), lrecnr, scount, buf);
