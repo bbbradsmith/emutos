@@ -319,7 +319,7 @@ static UWORD desktop_inf_icon(UWORD i)
 #if !CONF_WITH_DESKTOP_INF_FALLBACK
 static char *app_parse(char *pcurr, ANODE *pa)
 #else
-static char *app_parse(char *pcurr, ANODE *pa, bool desktop_inf)
+static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
 #endif
 {
     WORD temp;
@@ -909,10 +909,10 @@ void app_start(void)
 #else
     /* desktop.inf is stored after a 0 byte */
     if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
-     && (inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '\#'))
+     && (inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '#'))
         read_inf_file(inf_data);
 
-    if ((inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '\#'))
+    if ((inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '#'))
         build_inf(inf_data, xcnt, ycnt);
 #endif
 
