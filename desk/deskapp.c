@@ -975,7 +975,7 @@ void app_start(void)
 #if !CONF_WITH_DESKTOP_INF_FALLBACK
             pcurr = app_parse(pcurr, pa);
 #else
-            pcurr = app_parse(pcurr, pa, destop_inf!=0);
+            pcurr = app_parse(pcurr, pa, desktop_inf!=0);
 #endif
             if ((pa->a_type == AT_ISFILE) && pauto)
             {                           /* autorun exists & not yet merged */
