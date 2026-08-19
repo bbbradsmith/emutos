@@ -101,6 +101,13 @@ void gem_main(void);            /* called only from gemstart.S */
 
 #define WAIT_TIMEOUT 500                /* see wait_for_accs() */
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+/* use last byte of infbuf to mark DESKTOP.INF */
+#define DESKTOP_INF()   (infbuf[INF_SIZE]!=0)
+#else
+#define DESKTOP_INF()   (0)
+#endif
+
 typedef struct {                     /* used by count_accs()/ldaccs() */
     LONG addr;                          /* DA load address */
     char name[LEN_ZFNAME];              /* DA file name */
@@ -331,7 +338,6 @@ static LONG readfile(char *filename, LONG count, char *buf)
 }
 
 
-// TODO replace pcurr=0, #define INFTYPE() as a marker for infbuf[INF_SIZE] to check instead, or define it as 0 otherwise (will eliminate dead code?)
 /*
  *  Part 1 of early emudesk.inf processing
  *
@@ -341,7 +347,7 @@ static LONG readfile(char *filename, LONG count, char *buf)
  *  If CONF_WITH_BACKGOUNDS is specified, we also get the desktop background
  *  colours (from #Q) & save them for use when initialising the desktop.
  * 
- *  If CONF_WITH_DESKTOP_INF_FALLBACK infbuf[0]=0 indicates desktop.inf:
+ *  If CONF_WITH_DESKTOP_INF_FALLBACK then DESKTOP_INF() indicates desktop.inf:
  *    #E resolution is converted.
  *    #Q is compatible.
  */
@@ -358,25 +364,15 @@ static void process_inf1(void)
     bgfound = FALSE;            /* assume 'Q' not found */
 #endif
 
-    pcurr = infbuf;
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-    if (pcurr == '\0')
-        pcurr++;                /* desktop.inf */
-#endif
-
-    for ( ; *pcurr; )
+    for (pcurr = infbuf; *pcurr; )
     {
         if ( *pcurr++ != '#' )
             continue;
         switch(*pcurr++) {
         case 'E':               /* desktop environment, e.g. #E 3A 11 FF 02 */
 
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
-            pcurr += 6;                 /* skip over non-video preferences */
-#else
-            if (infbuf[0])              /* emudesk.inf 2nd word, desktop.inf 1st */
-                pcurr += 6;
-#endif
+            if (!DESKTOP_INF())
+                pcurr += 6;             /* emudesk.inf skip over non-video preferences */
 
             if (*pcurr == '\r')         /* no video info saved */
                 break;
@@ -384,10 +380,8 @@ static void process_inf1(void)
             pcurr = scan_2(pcurr, &env2);
             mode = MAKE_UWORD(env1, env2);
 
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-            if (!infbuf[0])                        /* desktop.inf */
-                mode = (mode & 0x000F) | 0xFF00;   /* convert video mode */
-#endif
+            if (DESKTOP_INF())                     /* desktop.inf */
+                mode = (mode & 0x000F) | 0xFF00;   /* convert to emudesk ST video mode */
 
             mode = check_moderez(mode);
             if (mode == 0)              /* no change required */
@@ -422,7 +416,7 @@ static void process_inf1(void)
  *  started, from the #Z line.  We also set the double-click speed
  *  and the blitter/cache status (if applicable), from the #E line.
  *
- *  If CONF_WITH_DESKTOP_INF_FALLBACK infbuf[0]=0 indicates desktop.inf:
+ *  If CONF_WITH_DESKTOP_INF_FALLBACK then DESKTOP_INF() indicates desktop.inf:
  *    #E dclick and blitter are compatible, cache state is not
  *    #Z is compatible
  *
@@ -440,10 +434,6 @@ static BOOL process_inf2(BOOL *isauto)
     *isauto = FALSE;                /* assume no autorun program */
 
     pcurr = infbuf;
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-    if (pcurr == '\0')
-        pcurr++;                    /* desktop.inf */
-#endif
 
     while (*pcurr)
     {
@@ -461,7 +451,7 @@ static BOOL process_inf2(BOOL *isauto)
                 Blitmode((env&0x80)?1:0);
 #endif
 #if CONF_WITH_CACHE_CONTROL
-            if (!CONF_WITH_DESKTOP_INF_FALLBACK || infbuf[0]) /* emudesk.inf */
+            if (!DESKTOP_INF())                 /* emudesk.inf */
             {
                 pcurr = scan_2(pcurr, &env);    /* skip over video bytes if present */
                 pcurr = scan_2(pcurr, &env);
@@ -806,21 +796,32 @@ void gem_main(void)
 #if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (n < 0L)
         n = 0L;
-    infbuf[n] = '\0';           /* terminate input data */
+    infbuf[n] = '\0';               /* terminate input data */
 #else
-    if (n >= 0L) {
-        infbuf[n] = '\0';
-        if (n == 0L)
-            infbuf[1] = '\0';   /* 0,0 marks as empty with no fallback */
-    }
-    else                        /* not found, try ST desktop.inf instead */
+    if (n >= 0L)
     {
-        infbuf[0] = '\0';       /* infbuf[0]=0 marks emudesk.inf not found */
-        n = readfile(INF_FILE_ALT1, INF_SIZE-1, infbuf+1);
+        infbuf[n] = '\0';
+        infbuf[INF_SIZE] = '\0';    /* 0 marks as emudesk format */
+    }
+    else                            /* not found, try desktop.inf, newdesk.inf */
+    {
+        n = readfile(INF_FILE_ALT1, INF_SIZE-1, infbuf);
         if (n >= 0L)
-            infbuf[n+1] = '\0';
+        {
+            infbuf[n] = '\0';
+            infbuf[INF_SIZE] = 1;   /* 1 marks as desktop.inf */
+        }
         else
-            infbuf[1] = '\0';   /* empty file 0,0 */
+        {
+            n = readfile(INF_FILE_ALT2, INF_SIZE-1, infbuf);
+            if (n >= 0L)
+            {
+                infbuf[n] = '\0';
+                infbuf[INF_SIZE] = 2;   /* 2 marks as newdesk.inf */
+            }
+            else
+                infbuf[0] = '\0';   /* empty file */
+        }
     }
 #endif
 

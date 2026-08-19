@@ -313,8 +313,8 @@ static UWORD desktop_inf_icon(UWORD i)
  *  Parse a single line from the EMUDESK.INF file
  *
  *  If CONF_WITH_DESKTOP_INF_FALLBACK icons will be translated
- *    #TMDINXVO compatible? not sure about variable params? TODO what is 000
- *    #YGPF compatible? not sure about variable params? TODO
+ *    #TMDINXVO compatible
+ *    #YGPF compatible
  */
 #if !CONF_WITH_DESKTOP_INF_FALLBACK
 static char *app_parse(char *pcurr, ANODE *pa)
@@ -722,7 +722,11 @@ static WORD app_rdicon(void)
 /*
  *  Read in the EMUDESK.INF file
  */
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
 static void read_inf_file(char *infbuf)
+#else
+static int read_inf_file(char *infbuf)
+#endif
 {
     LONG ret;
     char inf_file_name[sizeof(INF_FILE_NAME)];
@@ -740,20 +744,29 @@ static void read_inf_file(char *infbuf)
     if (ret >= 0L)
     {
         infbuf[ret] = '\0';
-        if (ret == 0)
-            infbuf[1] = '\0'; /* 0,0 marks as empty with no fallback */
+        return 0;             /* emudesk.inf */
     }
     else                      /* not found, try ST desktop.inf instead */
     {
-        infbuf[0] = '\0';     /* infbuf[0]=0 marks emudesk.inf not found */
         strcpy(inf_file_name, INF_FILE_ALT1);
         inf_file_name[0] += G.g_stdrv;
-        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-2, infbuf+1);
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
         if (ret >= 0)
-            infbuf[ret+1] = '\0';
-        else
-            infbuf[1] = '\0'; /* empty file 0,0 */
+        {
+            infbuf[ret] = '\0';
+            return 1;         /* desktop.inf */
+        }
+        strcpy(inf_file_name, INF_FILE_ALT2);
+        inf_file_name[0] += G.g_stdrv;
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
+        if (ret >= 0)
+        {
+            infbuf[ret] = '\0';
+            return 2;         /* newdesk.inf */
+        }
     }
+    infbuf[0] = '\0';
+    return -1;
 #endif
 }
 
@@ -853,6 +866,9 @@ void app_start(void)
     char *buf, *inf_data;
     char *pcurr, *ptmp, *pauto = NULL;
     WORD envr, xcnt, ycnt, xcent, wincnt, dummy;
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    int desktop_inf;
+#endif
 
     MAYBE_UNUSED(i);
 
@@ -907,33 +923,21 @@ void app_start(void)
     if (inf_data[0] != '#')
         build_inf(inf_data, xcnt, ycnt);
 #else
-    /* desktop.inf is stored after a 0 byte */
     if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
-     && (inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '#'))
-        read_inf_file(inf_data);
+     && (inf_data[0] != '#'))                    /* invalid signature    */
+        desktop_inf = read_inf_file(inf_data);   /*   so read from disk  */
 
-    if ((inf_data[0] != '#') && (inf_data[0] != '\0' || inf_data[1] != '#'))
+    /* If there's still no EMUDESK.INF data, build one now */
+    if (inf_data[0] != '#')
+    {
         build_inf(inf_data, xcnt, ycnt);
+        desktop_inf = 0;
+    }
 #endif
 
     wincnt = 0;
     inf_rev_level = 0;
     pcurr = inf_data;
-
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-    if (pcurr == '\0')
-        pcurr++;                        /* desktop.inf */
-    /* #R isn't found in desktop.inf
-     * #Z is compatible
-     * #TMGYFPDINXVO are compatible or not present, dispatched to app_parse()
-     * #W is compatible? TODO
-     * #E the first few preferences are compatible TODO
-     * #Q is compatible
-     * #K shortcuts are incompatible TODO
-     // TODO use the last byte of the buffer != 0 instead of first byte = 0
-     // this will make the code cleaner, less ++ at the start
-     */
-#endif
 
     while(*pcurr)
     {
@@ -1010,6 +1014,10 @@ void app_start(void)
         case 'E':                       /* Environment */
             pcurr++;
             pcurr = scan_2(pcurr, &envr);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (desktop_inf)
+                envr &= 0xF8; /* low 3 bits used differently by emudesk (double click), default 0 */
+#else
             cnxsave->cs_view = (envr & INF_E1_VIEWTEXT) ? V_TEXT : V_ICON;
             cnxsave->cs_sort = ( (envr & INF_E1_SORTMASK) >> 5);
             cnxsave->cs_confdel = ( (envr & INF_E1_CONFDEL) != 0);
@@ -1017,6 +1025,10 @@ void app_start(void)
             cnxsave->cs_dblclick = envr & INF_E1_DCMASK;
 
             pcurr = scan_2(pcurr, &envr);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (desktop_inf)
+                envr = 0xE0 | (envr & 0x10); /* only blitter setting bit is compatible, default E0 */
+#endif
 // TODO
 // envr = (INF_E2_DEFAULT & ~INF_E2_BLITTER) | (envr & INF_E2_BLITTER)
             cnxsave->cs_blitter = ( (envr & INF_E2_BLITTER) != 0);
@@ -1034,6 +1046,10 @@ void app_start(void)
             pcurr = scan_2(pcurr, &dummy);
 
             pcurr = scan_2(pcurr, &envr);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (desktop_inf)
+                envr = 0x60; /* no compatible data, default 60 */
+#endif
 // TODO
 // envr = INF_E5_DEFAULT
             if (envr & INF_E5_NOSORT)
@@ -1065,7 +1081,10 @@ void app_start(void)
          * versions of the ROM to _load_ menu item shortcuts.
          */
         case 'K':                       /* menu item shortcuts */
-// TODO if desktop inf discard
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (desktop_inf)
+                break;                  /* not compatible with emudesk */
+#endif
             pcurr++;
             for (i = 0; i < NUM_SHORTCUTS; i++)
             {
