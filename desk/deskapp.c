@@ -975,7 +975,7 @@ void app_start(void)
 #if !CONF_WITH_DESKTOP_INF_FALLBACK
             pcurr = app_parse(pcurr, pa);
 #else
-            pcurr = app_parse(pcurr, pa, inf_data[0]==0);
+            pcurr = app_parse(pcurr, pa, destop_inf!=0);
 #endif
             if ((pa->a_type == AT_ISFILE) && pauto)
             {                           /* autorun exists & not yet merged */
@@ -1017,7 +1017,7 @@ void app_start(void)
 #if CONF_WITH_DESKTOP_INF_FALLBACK
             if (desktop_inf)
                 envr &= 0xF8; /* low 3 bits used differently by emudesk (double click), default 0 */
-#else
+#endif
             cnxsave->cs_view = (envr & INF_E1_VIEWTEXT) ? V_TEXT : V_ICON;
             cnxsave->cs_sort = ( (envr & INF_E1_SORTMASK) >> 5);
             cnxsave->cs_confdel = ( (envr & INF_E1_CONFDEL) != 0);
