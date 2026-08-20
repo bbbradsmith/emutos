@@ -381,11 +381,7 @@ static char *app_parse(char *pcurr, ANODE *pa)
     pcurr = scan_str(pcurr, &pa->a_pappl);
     pcurr = scan_str(pcurr, &pa->a_pdata);
 
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (*pcurr == ' ')          /* new format */
-#else
-    if (!desktop_inf && *pcurr == ' ')
-#endif
     {
         pcurr++;
         if (*pcurr & INF_AT_APPDIR)
