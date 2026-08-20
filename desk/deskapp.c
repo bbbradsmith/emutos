@@ -398,6 +398,8 @@ static char *app_parse(char *pcurr, ANODE *pa)
     /* convert icon numbers in DESKTOP.INF */
     if (inf_rev_level < 0)
     {
+        if (pa->a_aicon > 0 && pa->a_dicon == 4) /* #T and #P can use 4 in dicon instead of -1 */
+            pa->a_dicon = -1;
         pa->a_aicon = desktop_inf_icon(pa->a_aicon);
         pa->a_dicon = desktop_inf_icon(pa->a_dicon);
     }
@@ -419,7 +421,6 @@ static char *app_parse(char *pcurr, ANODE *pa)
     }
     pcurr = scan_str(pcurr, &pa->a_pappl);
     pcurr = scan_str(pcurr, &pa->a_pdata);
-
     if (*pcurr == ' ')          /* new format */
     {
         pcurr++;
@@ -909,7 +910,6 @@ void app_start(void)
 
     shel_get(buf, SIZE_SHELBUF);
     inf_data = buf + CPDATA_LEN;
-
     if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
      && (inf_data[0] != '#'))               /* invalid signature    */
         read_inf_file(inf_data);            /*   so read from disk  */
