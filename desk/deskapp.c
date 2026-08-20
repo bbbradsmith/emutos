@@ -906,7 +906,9 @@ void app_start(void)
     G.g_patcol[2].window = INF_Q6_DEFAULT;
 #endif
 
-    shel_get(buf, SIZE_SHELBUF);
+    buf[0] = '\0';
+    buf[CPDATA_LEN] = '\0';
+    //shel_get(buf, SIZE_SHELBUF); // HACK remove shel caching?
     inf_data = buf + CPDATA_LEN;
 
 #if !CONF_WITH_DESKTOP_INF_FALLBACK
