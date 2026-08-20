@@ -293,7 +293,7 @@ char *scan_str(char *pcurr, char **ppstr)
 /*
  * Convert a DESKTOP.INF icon index to EMUDESK.INF
  */
-static UWORD desktop_inf_icon(UWORD i)
+static UWORD desktop_inf_icon(WORD i)
 {
     static const UWORD DESKTOP_INF_ICON_CONVERT[12] = {
         IG_FLOPPY,
@@ -310,6 +310,8 @@ static UWORD desktop_inf_icon(UWORD i)
         IG_DOCU, /* TOS document */
         IG_HARD,
     };
+    if (i < 0)
+        return i;
     if (i >= 12)
         return IG_DOCU;
     return DESKTOP_INF_ICON_CONVERT[i];
@@ -397,7 +399,7 @@ static char *app_parse(char *pcurr, ANODE *pa)
     if (inf_rev_level < 0)
     {
         pa->a_aicon = desktop_inf_icon(pa->a_aicon);
-        pa->a_dicon = pa->a_aicon; /* doesn't have separate app/document icons */
+        pa->a_dicon = desktop_inf_icon(pa->a_dicon);
     }
     else
 #endif
