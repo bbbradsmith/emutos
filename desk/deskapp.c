@@ -289,34 +289,10 @@ char *scan_str(char *pcurr, char **ppstr)
 }
 
 
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-/*
- * Convert a DESKTOP.INF icon index to EMUDESK.INF
- */
-static UWORD desktop_inf_icon(UWORD i)
-{
-    static const UWORD DESKTOP_INF_ICON_CONVERT[5] = {
-        IG_FLOPPY,
-        IG_FOLDER,
-        IG_TRASH,
-        IG_APPL,
-        IG_DOCU,
-    };
-    if (i > 4)
-        return IG_APPL;
-    return DESKTOP_INF_ICON_CONVERT[i];
-}
-#endif
-
-
 /*
  *  Parse a single line from the EMUDESK.INF file
  */
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
 static char *app_parse(char *pcurr, ANODE *pa)
-#else
-static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
-#endif
 {
     WORD temp;
 
@@ -388,15 +364,6 @@ static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
         pa->a_dicon = IG_DOCU;
     pcurr++;
 
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-    /* convert icon numbers in DESKTOP.INF */
-    if (desktop_inf)
-    {
-        pa->a_aicon = desktop_inf_icon(pa->a_aicon);
-        pa->a_dicon = pa->a_aicon; /* doesn't have separate app/document icons */
-    }
-    else
-#endif
     /* convert icon numbers in EMUDESK.INF revision 0 */
     if (inf_rev_level == 0)
     {
@@ -430,11 +397,6 @@ static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
         pcurr++;
     }
     pcurr = scan_str(pcurr, &pa->a_pargs);
-
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-    if (desktop_inf)
-        pa->a_pargs[0] = '\0';
-#endif
 
 #if CONF_WITH_VIEWER_SUPPORT
     if (is_viewer(pa))
@@ -968,11 +930,7 @@ void app_start(void)
             pa = app_alloc();
             if (!pa)                    /* paranoia */
                 return;
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
             pcurr = app_parse(pcurr, pa);
-#else
-            pcurr = app_parse(pcurr, pa, desktop_inf!=0);
-#endif
             if ((pa->a_type == AT_ISFILE) && pauto)
             {                           /* autorun exists & not yet merged */
                 if (strcmp(pauto,pa->a_pappl) == 0)
