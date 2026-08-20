@@ -311,10 +311,6 @@ static UWORD desktop_inf_icon(UWORD i)
 
 /*
  *  Parse a single line from the EMUDESK.INF file
- *
- *  If CONF_WITH_DESKTOP_INF_FALLBACK icons will be translated
- *    #TMDINXVO compatible
- *    #YGPF compatible
  */
 #if !CONF_WITH_DESKTOP_INF_FALLBACK
 static char *app_parse(char *pcurr, ANODE *pa)

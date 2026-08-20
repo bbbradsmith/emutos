@@ -346,10 +346,6 @@ static LONG readfile(char *filename, LONG count, char *buf)
  *
  *  If CONF_WITH_BACKGOUNDS is specified, we also get the desktop background
  *  colours (from #Q) & save them for use when initialising the desktop.
- * 
- *  If CONF_WITH_DESKTOP_INF_FALLBACK then DESKTOP_INF() indicates desktop.inf:
- *    #E resolution is converted.
- *    #Q is compatible.
  */
 static void process_inf1(void)
 {
@@ -416,10 +412,6 @@ static void process_inf1(void)
  *  started, from the #Z line.  We also set the double-click speed
  *  and the blitter/cache status (if applicable), from the #E line.
  *
- *  If CONF_WITH_DESKTOP_INF_FALLBACK then DESKTOP_INF() indicates desktop.inf:
- *    #E dclick and blitter are compatible, cache state is not
- *    #Z is compatible
- *
  *  Returns:
  *      TRUE if initial program is a GEM program (normal)
  *      FALSE if initial program is character-mode (only if an autorun
@@ -434,7 +426,6 @@ static BOOL process_inf2(BOOL *isauto)
     *isauto = FALSE;                /* assume no autorun program */
 
     pcurr = infbuf;
-
     while (*pcurr)
     {
         if ( *pcurr++ != '#' )
@@ -444,7 +435,8 @@ static BOOL process_inf2(BOOL *isauto)
         {                           /* desktop environment          */
             pcurr += 2;
             pcurr = scan_2(pcurr, &env);
-            ev_dclick(env & 0x07, TRUE);
+            if (!DESKTOP_INF())     /* desktop.inf does not store dclick here */
+                ev_dclick(env & 0x07, TRUE);
             pcurr = scan_2(pcurr, &env);    /* get desired blitter state */
 #if CONF_WITH_BLITTER
             if (has_blitter)
