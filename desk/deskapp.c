@@ -1022,11 +1022,9 @@ void app_start(void)
 
             pcurr = scan_2(pcurr, &envr);
 #if CONF_WITH_DESKTOP_INF_FALLBACK
-            if (desktop_inf)
-                envr = 0xE0 | (envr & 0x10); /* only blitter setting bit is compatible, default E0 */
+            if (desktop_inf) /* only blitter setting bit is compatible */
+                envr = (INF_E2_DEFAULT & ~INF_E2_BLITTER) | (envr & INF_E2_BLITTER);
 #endif
-// TODO
-// envr = (INF_E2_DEFAULT & ~INF_E2_BLITTER) | (envr & INF_E2_BLITTER)
             cnxsave->cs_blitter = ( (envr & INF_E2_BLITTER) != 0);
             cnxsave->cs_confovwr = ( (envr & INF_E2_ALLOWOVW) == 0);
             if (envr & INF_E2_IDTDATE)
@@ -1044,10 +1042,8 @@ void app_start(void)
             pcurr = scan_2(pcurr, &envr);
 #if CONF_WITH_DESKTOP_INF_FALLBACK
             if (desktop_inf)
-                envr = 0x60; /* no compatible data, default 60 */
+                envr = INF_E5_DEFAULT; /* no compatible data */
 #endif
-// TODO
-// envr = INF_E5_DEFAULT
             if (envr & INF_E5_NOSORT)
                 cnxsave->cs_sort = CS_NOSORT;
 #if CONF_WITH_DESKTOP_CONFIG
