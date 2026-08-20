@@ -386,6 +386,13 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pcurr = scan_2(pcurr, &pa->a_yspot);
     }
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (inf_rev_level < 0 && !(pa->a_flags & AF_ISDESK))
+    {
+        // TODO if there is a 3 digit number followed by a space, skip it?
+    }
+#endif
+
     pcurr = scan_2(pcurr, &pa->a_aicon);
     if (pa->a_aicon >= G.g_numiblks)
         pa->a_aicon = IG_APPL;
@@ -398,8 +405,9 @@ static char *app_parse(char *pcurr, ANODE *pa)
     /* convert icon numbers in DESKTOP.INF */
     if (inf_rev_level < 0)
     {
-        if (pa->a_aicon > 0 && pa->a_dicon == 4) /* #T and #P can use 4 in dicon instead of -1 */
-            pa->a_dicon = -1;
+        // TODO this is probably unnecessary
+        //if (pa->a_aicon >= 0 && pa->a_dicon == 4) /* #T and #P can use 4 in dicon instead of -1 */
+        //    pa->a_dicon = -1;
         pa->a_aicon = desktop_inf_icon(pa->a_aicon);
         pa->a_dicon = desktop_inf_icon(pa->a_dicon);
     }
@@ -421,6 +429,10 @@ static char *app_parse(char *pcurr, ANODE *pa)
     }
     pcurr = scan_str(pcurr, &pa->a_pappl);
     pcurr = scan_str(pcurr, &pa->a_pdata);
+
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (inf_rev_level >= 0)   /* -1 is desktop.inf */
+#endif
     if (*pcurr == ' ')          /* new format */
     {
         pcurr++;
@@ -453,6 +465,9 @@ static char *app_parse(char *pcurr, ANODE *pa)
         {
         case AT_ISFILE:
         case AT_ISFOLD:
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (inf_rev_level >= 0)   /* -1 is desktop.inf */
+#endif
             if (inf_rev_level < 2)
             {
                 temp = pa->a_pappl;
