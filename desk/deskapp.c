@@ -289,10 +289,42 @@ char *scan_str(char *pcurr, char **ppstr)
 }
 
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+/*
+ * Convert a DESKTOP.INF icon index to EMUDESK.INF
+ */
+static UWORD desktop_inf_icon(UWORD i)
+{
+    static const UWORD DESKTOP_INF_ICON_CONVERT[12] = {
+        IG_FLOPPY,
+        IG_FOLDER,
+        IG_TRASH,
+        IG_APPL,
+        IG_DOCU,
+        /* TOS 2.xx */
+        IG_PRINT,
+        IG_PRINT, /* laser printer */
+        IG_REMOV, /* CD ROM */
+        IG_REMOV, /* cartridge */
+        IG_FLOPPY,
+        IG_DOCU, /* TOS document */
+        IG_HARD,
+    };
+    if (i >= 12)
+        return IG_DOCU;
+    return DESKTOP_INF_ICON_CONVERT[i];
+}
+#endif
+
+
 /*
  *  Parse a single line from the EMUDESK.INF file
  */
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
 static char *app_parse(char *pcurr, ANODE *pa)
+#else
+static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
+#endif
 {
     WORD temp;
 
@@ -364,6 +396,15 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pa->a_dicon = IG_DOCU;
     pcurr++;
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    /* convert icon numbers in DESKTOP.INF */
+    if (desktop_inf)
+    {
+        pa->a_aicon = desktop_inf_icon(pa->a_aicon);
+        pa->a_dicon = pa->a_aicon; /* doesn't have separate app/document icons */
+    }
+    else
+#endif
     /* convert icon numbers in EMUDESK.INF revision 0 */
     if (inf_rev_level == 0)
     {
@@ -926,7 +967,11 @@ void app_start(void)
             pa = app_alloc();
             if (!pa)                    /* paranoia */
                 return;
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
             pcurr = app_parse(pcurr, pa);
+#else
+            pcurr = app_parse(pcurr, pa, desktop_inf!=0);
+#endif
             if ((pa->a_type == AT_ISFILE) && pauto)
             {                           /* autorun exists & not yet merged */
                 if (strcmp(pauto,pa->a_pappl) == 0)
