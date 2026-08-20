@@ -393,7 +393,7 @@ static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
     if (desktop_inf)
     {
         pa->a_aicon = desktop_inf_icon(pa->a_aicon);
-        pa->a_dicon = desktop_inf_icon(pa->a_dicon);
+        pa->a_dicon = pa->a_aicon; /* doesn't have separate app/document icons */
     }
     else
 #endif

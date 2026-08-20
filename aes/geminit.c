@@ -377,7 +377,19 @@ static void process_inf1(void)
             mode = MAKE_UWORD(env1, env2);
 
             if (DESKTOP_INF())                     /* desktop.inf */
-                mode = (mode & 0x000F) | 0xFF00;   /* convert to emudesk ST video mode */
+            {
+                /* convert to emudesk ST video mode */
+                switch (mode & 0x000F)
+                {
+                    default:
+                    case 1: mode = 0xFF00 | ST_LOW; break;
+                    case 2: mode = 0xFF00 | ST_MEDIUM; break;
+                    case 3: mode = 0xFF00 | ST_HIGH; break;
+                    case 4: mode = 0xFF00 | TT_LOW; break;
+                    case 5: mode = 0xFF00 | TT_MEDIUM; break;
+                    case 6: mode = 0xFF00 | TT_HIGH; break;
+                }
+            }
 
             mode = check_moderez(mode);
             if (mode == 0)              /* no change required */
