@@ -320,11 +320,7 @@ static UWORD desktop_inf_icon(UWORD i)
 /*
  *  Parse a single line from the EMUDESK.INF file
  */
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
 static char *app_parse(char *pcurr, ANODE *pa)
-#else
-static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
-#endif
 {
     WORD temp;
 
@@ -398,7 +394,7 @@ static char *app_parse(char *pcurr, ANODE *pa, BOOL desktop_inf)
 
 #if CONF_WITH_DESKTOP_INF_FALLBACK
     /* convert icon numbers in DESKTOP.INF */
-    if (desktop_inf)
+    if (inf_rev_level < 0)
     {
         pa->a_aicon = desktop_inf_icon(pa->a_aicon);
         pa->a_dicon = pa->a_aicon; /* doesn't have separate app/document icons */
@@ -717,11 +713,7 @@ static WORD app_rdicon(void)
 /*
  *  Read in the EMUDESK.INF file
  */
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
 static void read_inf_file(char *infbuf)
-#else
-static int read_inf_file(char *infbuf)
-#endif
 {
     LONG ret;
     char inf_file_name[sizeof(INF_FILE_NAME)];
@@ -736,32 +728,38 @@ static int read_inf_file(char *infbuf)
         ret = 0L;
     infbuf[ret] = '\0';
 #else
+#define DESKTOP_INF_PREFIX       "#R FF\r\n"
+#define DIP_LEN                  7
     if (ret >= 0L)
     {
         infbuf[ret] = '\0';
-        return 0;             /* emudesk.inf */
+        return;               /* emudesk.inf */
     }
     else                      /* not found, try ST desktop.inf instead */
     {
+        /* rev -1 prefix indicates desktop.inf format */
+        strcpy(infbuf,DESKTOP_INF_PREFIX);
+
         strcpy(inf_file_name, INF_FILE_ALT1);
         inf_file_name[0] += G.g_stdrv;
-        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
         if (ret >= 0)
         {
-            infbuf[ret] = '\0';
-            return 1;         /* desktop.inf */
+            infbuf[ret+DIP_LEN] = '\0';
+            return;           /* desktop.inf */
         }
+
         strcpy(inf_file_name, INF_FILE_ALT2);
         inf_file_name[0] += G.g_stdrv;
-        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
         if (ret >= 0)
         {
-            infbuf[ret] = '\0';
-            return 2;         /* newdesk.inf */
+            infbuf[ret+DIP_LEN] = '\0';
+            return;           /* newdesk.inf */
         }
     }
-    infbuf[0] = '\0';
-    return -1;
+    infbuf[0] = '\0';         /* no file */
+#undef DIP_LEN
 #endif
 }
 
@@ -861,9 +859,6 @@ void app_start(void)
     char *buf, *inf_data;
     char *pcurr, *ptmp, *pauto = NULL;
     WORD envr, xcnt, ycnt, xcent, wincnt, dummy;
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-    int desktop_inf;
-#endif
 
     MAYBE_UNUSED(i);
 
@@ -906,12 +901,13 @@ void app_start(void)
     G.g_patcol[2].window = INF_Q6_DEFAULT;
 #endif
 
+    /* make sure there isn't old data in our allocated buffer */
     buf[0] = '\0';
     buf[CPDATA_LEN] = '\0';
-    //shel_get(buf, SIZE_SHELBUF); // HACK remove shel caching?
+
+    shel_get(buf, SIZE_SHELBUF);
     inf_data = buf + CPDATA_LEN;
 
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
      && (inf_data[0] != '#'))               /* invalid signature    */
         read_inf_file(inf_data);            /*   so read from disk  */
@@ -919,18 +915,6 @@ void app_start(void)
     /* If there's still no EMUDESK.INF data, build one now */
     if (inf_data[0] != '#')
         build_inf(inf_data, xcnt, ycnt);
-#else
-    if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
-     && (inf_data[0] != '#'))                    /* invalid signature    */
-        desktop_inf = read_inf_file(inf_data);   /*   so read from disk  */
-
-    /* If there's still no EMUDESK.INF data, build one now */
-    if (inf_data[0] != '#')
-    {
-        build_inf(inf_data, xcnt, ycnt);
-        desktop_inf = 0;
-    }
-#endif
 
     wincnt = 0;
     inf_rev_level = 0;
@@ -969,11 +953,7 @@ void app_start(void)
             pa = app_alloc();
             if (!pa)                    /* paranoia */
                 return;
-#if !CONF_WITH_DESKTOP_INF_FALLBACK
             pcurr = app_parse(pcurr, pa);
-#else
-            pcurr = app_parse(pcurr, pa, desktop_inf!=0);
-#endif
             if ((pa->a_type == AT_ISFILE) && pauto)
             {                           /* autorun exists & not yet merged */
                 if (strcmp(pauto,pa->a_pappl) == 0)
@@ -1012,7 +992,7 @@ void app_start(void)
             pcurr++;
             pcurr = scan_2(pcurr, &envr);
 #if CONF_WITH_DESKTOP_INF_FALLBACK
-            if (desktop_inf)
+            if (inf_rev_level < 0)
                 envr &= 0xF8; /* low 3 bits used differently by emudesk (double click), default 0 */
 #endif
             cnxsave->cs_view = (envr & INF_E1_VIEWTEXT) ? V_TEXT : V_ICON;
@@ -1023,7 +1003,7 @@ void app_start(void)
 
             pcurr = scan_2(pcurr, &envr);
 #if CONF_WITH_DESKTOP_INF_FALLBACK
-            if (desktop_inf) /* only blitter setting bit is compatible */
+            if (inf_rev_level < 0) /* only blitter setting bit is compatible */
                 envr = (INF_E2_DEFAULT & ~INF_E2_BLITTER) | (envr & INF_E2_BLITTER);
 #endif
             cnxsave->cs_blitter = ( (envr & INF_E2_BLITTER) != 0);
@@ -1042,7 +1022,7 @@ void app_start(void)
 
             pcurr = scan_2(pcurr, &envr);
 #if CONF_WITH_DESKTOP_INF_FALLBACK
-            if (desktop_inf)
+            if (inf_rev_level < 0)
                 envr = INF_E5_DEFAULT; /* no compatible data */
 #endif
             if (envr & INF_E5_NOSORT)
@@ -1075,7 +1055,7 @@ void app_start(void)
          */
         case 'K':                       /* menu item shortcuts */
 #if CONF_WITH_DESKTOP_INF_FALLBACK
-            if (desktop_inf)
+            if (inf_rev_level < 0)
                 break;                  /* not compatible with emudesk */
 #endif
             pcurr++;
