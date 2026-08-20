@@ -316,7 +316,30 @@ static UWORD desktop_inf_icon(WORD i)
         return IG_DOCU;
     return DESKTOP_INF_ICON_CONVERT[i];
 }
-#endif
+
+
+/*
+ * If the next token is a 3 digit hex number, skip over it,
+ * otherwise return the starting position.
+ */
+static char* scan_skip3(char *pcurr)
+{
+    int i;
+    char* pskip = pcurr;
+
+    while(*pskip == ' ')
+        pskip++;
+    for (i = 0; i < 3; i++)
+    {
+        if ((*pskip < '0' || *pskip > '9') && (*pskip < 'A' || *pskip > 'F'))
+            return pcurr;   /* desktop.inf assumed */
+        pskip++;
+    }
+    if (*pskip == ' ')
+        return pskip;       /* newdesk.inf 000 skipped */
+    return pcurr;           /* desktop.inf assumed */
+}
+#endif /* CONF_WITH_DESKTOP_INF_FALLBACK */
 
 
 /*
@@ -389,7 +412,10 @@ static char *app_parse(char *pcurr, ANODE *pa)
 #if CONF_WITH_DESKTOP_INF_FALLBACK
     if (inf_rev_level < 0 && !(pa->a_flags & AF_ISDESK))
     {
-        // TODO if there is a 3 digit number followed by a space, skip it?
+        /* newdesk.inf contains a 3 digit hex entry here,
+         * which was used for keyboard shortcut assignment
+         * in fields DFGINPY. */
+        pcurr = scan_skip3(pcurr);
     }
 #endif
 
@@ -405,9 +431,6 @@ static char *app_parse(char *pcurr, ANODE *pa)
     /* convert icon numbers in DESKTOP.INF */
     if (inf_rev_level < 0)
     {
-        // TODO this is probably unnecessary
-        //if (pa->a_aicon >= 0 && pa->a_dicon == 4) /* #T and #P can use 4 in dicon instead of -1 */
-        //    pa->a_dicon = -1;
         pa->a_aicon = desktop_inf_icon(pa->a_aicon);
         pa->a_dicon = desktop_inf_icon(pa->a_dicon);
     }
@@ -1003,6 +1026,16 @@ void app_start(void)
                     *ptmp++ = *pcurr++;
                 *ptmp = '\0';
                 wincnt += 1;
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (inf_rev_level < 0)
+            {
+                /* emutos file windows have no horizontal scroll,
+                 * compensate to show the correct icon, if possible.
+                 * every 10 width adds another icon to the row. */
+                pws->vsl_save += pws->hsl_save / (pws->w_save / 10);
+                pws->hsl_save = 0;
+            }
+#endif
             }
             break;
         case 'E':                       /* Environment */
