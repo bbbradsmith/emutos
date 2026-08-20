@@ -1012,12 +1012,22 @@ void app_start(void)
                 pcurr = scan_2(pcurr, &pws->vsl_save);
 /* BugFix       */
                 pcurr = scan_2(pcurr, &pws->x_save);
-                pws->x_save *= gl_wchar;
                 pcurr = scan_2(pcurr, &pws->y_save);
-                pws->y_save *= gl_hchar;
                 pcurr = scan_2(pcurr, &pws->w_save);
-                pws->w_save *= gl_wchar;
                 pcurr = scan_2(pcurr, &pws->h_save);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+                if (inf_rev_level < 0)
+                {
+                    /* emutos file windows have no horizontal scroll,
+                    * compensate to show the correct icon, if possible.
+                    * every 10 width adds another icon to the row. */
+                    pws->vsl_save += pws->hsl_save / (pws->w_save / 10);
+                    pws->hsl_save = 0;
+                }
+#endif
+                pws->x_save *= gl_wchar;
+                pws->y_save *= gl_hchar;
+                pws->w_save *= gl_wchar;
                 pws->h_save *= gl_hchar;
 /* */
                 pcurr += 4;             /* skip no-longer-used field */
@@ -1026,16 +1036,6 @@ void app_start(void)
                     *ptmp++ = *pcurr++;
                 *ptmp = '\0';
                 wincnt += 1;
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-            if (inf_rev_level < 0)
-            {
-                /* emutos file windows have no horizontal scroll,
-                 * compensate to show the correct icon, if possible.
-                 * every 10 width adds another icon to the row. */
-                pws->vsl_save += pws->hsl_save / (pws->w_save / 10);
-                pws->hsl_save = 0;
-            }
-#endif
             }
             break;
         case 'E':                       /* Environment */
