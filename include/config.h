@@ -1869,7 +1869,7 @@
 
 /*
  * Set CONF_WITH_DESKTOP_INF_FALLBACK to 1 to support a fallback to
- * ST TOS' DESKTOP.INF and STE+ TOS' NEWDESK.INF when EMUDESK.INF does not exist.
+ * STE+ TOS' NEWDESK.INF and ST TOS' DESKTOP.INF when EMUDESK.INF does not exist.
  * (Provides better user experience with Atari ST disks made with TOS.)
  */
 #ifndef CONF_WITH_DESKTOP_INF_FALLBACK
