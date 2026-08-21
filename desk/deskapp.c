@@ -289,6 +289,59 @@ char *scan_str(char *pcurr, char **ppstr)
 }
 
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+/*
+ * Convert a DESKTOP.INF icon index to EMUDESK.INF
+ */
+static UWORD desktop_inf_icon(WORD i)
+{
+    static const UWORD DESKTOP_INF_ICON_CONVERT[12] = {
+        IG_FLOPPY,
+        IG_FOLDER,
+        IG_TRASH,
+        IG_APPL,
+        IG_DOCU,
+        /* TOS 2.xx */
+        IG_PRINT,
+        IG_PRINT, /* laser printer */
+        IG_REMOV, /* CD ROM */
+        IG_REMOV, /* cartridge */
+        IG_FLOPPY,
+        IG_DOCU, /* TOS document */
+        IG_HARD,
+    };
+    if (i < 0)
+        return i;
+    if (i >= 12)
+        return IG_DOCU;
+    return DESKTOP_INF_ICON_CONVERT[i];
+}
+
+
+/*
+ * If the next token is a 3 digit hex number, skip over it,
+ * otherwise return the starting position.
+ */
+static char* scan_skip3(char *pcurr)
+{
+    int i;
+    char* pskip = pcurr;
+
+    while(*pskip == ' ')
+        pskip++;
+    for (i = 0; i < 3; i++)
+    {
+        if ((*pskip < '0' || *pskip > '9') && (*pskip < 'A' || *pskip > 'F'))
+            return pcurr;   /* desktop.inf assumed */
+        pskip++;
+    }
+    if (*pskip == ' ')
+        return pskip;       /* newdesk.inf 000 skipped */
+    return pcurr;           /* desktop.inf assumed */
+}
+#endif /* CONF_WITH_DESKTOP_INF_FALLBACK */
+
+
 /*
  *  Parse a single line from the EMUDESK.INF file
  */
@@ -356,6 +409,16 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pcurr = scan_2(pcurr, &pa->a_yspot);
     }
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (inf_rev_level < 0 && !(pa->a_flags & AF_ISDESK))
+    {
+        /* newdesk.inf contains a 3 digit hex entry here,
+         * which was used for keyboard shortcut assignment
+         * in fields DFGINPY. */
+        pcurr = scan_skip3(pcurr);
+    }
+#endif
+
     pcurr = scan_2(pcurr, &pa->a_aicon);
     if (pa->a_aicon >= G.g_numiblks)
         pa->a_aicon = IG_APPL;
@@ -364,9 +427,16 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pa->a_dicon = IG_DOCU;
     pcurr++;
 
-    /*
-     * convert icon numbers in EMUDESK.INF revision 0
-     */
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    /* convert icon numbers in DESKTOP.INF */
+    if (inf_rev_level < 0)
+    {
+        pa->a_aicon = desktop_inf_icon(pa->a_aicon);
+        pa->a_dicon = desktop_inf_icon(pa->a_dicon);
+    }
+    else
+#endif
+    /* convert icon numbers in EMUDESK.INF revision 0 */
     if (inf_rev_level == 0)
     {
         if (pa->a_aicon == IG_APPL_REV0)
@@ -382,6 +452,10 @@ static char *app_parse(char *pcurr, ANODE *pa)
     }
     pcurr = scan_str(pcurr, &pa->a_pappl);
     pcurr = scan_str(pcurr, &pa->a_pdata);
+
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if (inf_rev_level >= 0)   /* -1 is desktop.inf */
+#endif
     if (*pcurr == ' ')          /* new format */
     {
         pcurr++;
@@ -414,6 +488,9 @@ static char *app_parse(char *pcurr, ANODE *pa)
         {
         case AT_ISFILE:
         case AT_ISFOLD:
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (inf_rev_level >= 0)   /* -1 is desktop.inf */
+#endif
             if (inf_rev_level < 2)
             {
                 temp = pa->a_pappl;
@@ -686,9 +763,45 @@ static void read_inf_file(char *infbuf)
     inf_file_name[0] += G.g_stdrv;      /* Adjust drive letter  */
 
     ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
+
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (ret < 0L)
         ret = 0L;
     infbuf[ret] = '\0';
+#else
+#define DESKTOP_INF_PREFIX       "#R FF\r\n"
+#define DIP_LEN                  7
+    if (ret >= 0L)
+    {
+        infbuf[ret] = '\0';
+        return;               /* emudesk.inf */
+    }
+    else                      /* not found, try ST desktop.inf instead */
+    {
+        /* rev -1 prefix indicates desktop.inf format */
+        strcpy(infbuf,DESKTOP_INF_PREFIX);
+
+        strcpy(inf_file_name, INF_FILE_ALT1);
+        inf_file_name[0] += G.g_stdrv;
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
+        if (ret >= 0)
+        {
+            infbuf[ret+DIP_LEN] = '\0';
+            return;           /* desktop.inf */
+        }
+
+        strcpy(inf_file_name, INF_FILE_ALT2);
+        inf_file_name[0] += G.g_stdrv;
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
+        if (ret >= 0)
+        {
+            infbuf[ret+DIP_LEN] = '\0';
+            return;           /* newdesk.inf */
+        }
+    }
+    infbuf[0] = '\0';         /* no file */
+#undef DIP_LEN
+#endif
 }
 
 
@@ -829,6 +942,10 @@ void app_start(void)
     G.g_patcol[2].window = INF_Q6_DEFAULT;
 #endif
 
+    /* make sure there isn't old data in our allocated buffer */
+    buf[0] = '\0';
+    buf[CPDATA_LEN] = '\0';
+
     shel_get(buf, SIZE_SHELBUF);
     inf_data = buf + CPDATA_LEN;
     if (!(bootflags & BOOTFLAG_SKIP_AUTO_ACC)
@@ -895,12 +1012,22 @@ void app_start(void)
                 pcurr = scan_2(pcurr, &pws->vsl_save);
 /* BugFix       */
                 pcurr = scan_2(pcurr, &pws->x_save);
-                pws->x_save *= gl_wchar;
                 pcurr = scan_2(pcurr, &pws->y_save);
-                pws->y_save *= gl_hchar;
                 pcurr = scan_2(pcurr, &pws->w_save);
-                pws->w_save *= gl_wchar;
                 pcurr = scan_2(pcurr, &pws->h_save);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+                if (inf_rev_level < 0)
+                {
+                    /* emutos file windows have no horizontal scroll,
+                    * compensate to show the correct icon, if possible.
+                    * every 10 width adds another icon to the row. */
+                    pws->vsl_save += pws->hsl_save / (pws->w_save / 10);
+                    pws->hsl_save = 0;
+                }
+#endif
+                pws->x_save *= gl_wchar;
+                pws->y_save *= gl_hchar;
+                pws->w_save *= gl_wchar;
                 pws->h_save *= gl_hchar;
 /* */
                 pcurr += 4;             /* skip no-longer-used field */
@@ -914,6 +1041,10 @@ void app_start(void)
         case 'E':                       /* Environment */
             pcurr++;
             pcurr = scan_2(pcurr, &envr);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (inf_rev_level < 0)
+                envr &= 0xF8; /* low 3 bits used differently by emudesk (double click), default 0 */
+#endif
             cnxsave->cs_view = (envr & INF_E1_VIEWTEXT) ? V_TEXT : V_ICON;
             cnxsave->cs_sort = ( (envr & INF_E1_SORTMASK) >> 5);
             cnxsave->cs_confdel = ( (envr & INF_E1_CONFDEL) != 0);
@@ -921,6 +1052,10 @@ void app_start(void)
             cnxsave->cs_dblclick = envr & INF_E1_DCMASK;
 
             pcurr = scan_2(pcurr, &envr);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (inf_rev_level < 0) /* only blitter setting bit is compatible */
+                envr = (INF_E2_DEFAULT & ~INF_E2_BLITTER) | (envr & INF_E2_BLITTER);
+#endif
             cnxsave->cs_blitter = ( (envr & INF_E2_BLITTER) != 0);
             cnxsave->cs_confovwr = ( (envr & INF_E2_ALLOWOVW) == 0);
             if (envr & INF_E2_IDTDATE)
@@ -936,6 +1071,10 @@ void app_start(void)
             pcurr = scan_2(pcurr, &dummy);
 
             pcurr = scan_2(pcurr, &envr);
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (inf_rev_level < 0)
+                envr = INF_E5_DEFAULT; /* no compatible data */
+#endif
             if (envr & INF_E5_NOSORT)
                 cnxsave->cs_sort = CS_NOSORT;
 #if CONF_WITH_DESKTOP_CONFIG
@@ -965,6 +1104,10 @@ void app_start(void)
          * versions of the ROM to _load_ menu item shortcuts.
          */
         case 'K':                       /* menu item shortcuts */
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+            if (inf_rev_level < 0)
+                break;                  /* not compatible with emudesk */
+#endif
             pcurr++;
             for (i = 0; i < NUM_SHORTCUTS; i++)
             {
@@ -972,7 +1115,9 @@ void app_start(void)
                 pcurr = scan_2(pcurr, &temp);
                 menu_shortcuts[i] = (UBYTE)temp;
             }
-        break;
+            break;
+        default:                        /* ignore unknown line types */
+            break;
         }
     }
 
