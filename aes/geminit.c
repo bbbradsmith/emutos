@@ -101,6 +101,13 @@ void gem_main(void);            /* called only from gemstart.S */
 
 #define WAIT_TIMEOUT 500                /* see wait_for_accs() */
 
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+/* use last byte of infbuf to mark DESKTOP.INF */
+#define DESKTOP_INF()   (infbuf[INF_SIZE]!=0)
+#else
+#define DESKTOP_INF()   (0)
+#endif
+
 typedef struct {                     /* used by count_accs()/ldaccs() */
     LONG addr;                          /* DA load address */
     char name[LEN_ZFNAME];              /* DA file name */
@@ -359,13 +366,32 @@ static void process_inf1(void)
             continue;
         switch(*pcurr++) {
         case 'E':               /* desktop environment, e.g. #E 3A 11 FF 02 */
-            pcurr += 6;                 /* skip over non-video preferences */
+
+            if (!DESKTOP_INF())
+                pcurr += 6;             /* emudesk.inf skip over non-video preferences */
+
             if (*pcurr == '\r')         /* no video info saved */
                 break;
 
             pcurr = scan_2(pcurr, &env1);
             pcurr = scan_2(pcurr, &env2);
             mode = MAKE_UWORD(env1, env2);
+
+            if (DESKTOP_INF())                     /* desktop.inf */
+            {
+                /* convert to emudesk ST video mode */
+                switch (mode & 0x000F)
+                {
+                    default:
+                    case 1: mode = 0xFF00 | ST_LOW; break;
+                    case 2: mode = 0xFF00 | ST_MEDIUM; break;
+                    case 3: mode = 0xFF00 | ST_HIGH; break;
+                    case 4: mode = 0xFF00 | TT_LOW; break;
+                    case 5: mode = 0xFF00 | TT_MEDIUM; break;
+                    case 6: mode = 0xFF00 | TT_HIGH; break;
+                }
+            }
+
             mode = check_moderez(mode);
             if (mode == 0)              /* no change required */
                 break;
@@ -422,17 +448,21 @@ static BOOL process_inf2(BOOL *isauto)
         {                           /* desktop environment          */
             pcurr += 2;
             pcurr = scan_2(pcurr, &env);
-            ev_dclick(env & 0x07, TRUE);
+            if (!DESKTOP_INF())     /* desktop.inf does not store dclick here */
+                ev_dclick(env & 0x07, TRUE);
             pcurr = scan_2(pcurr, &env);    /* get desired blitter state */
 #if CONF_WITH_BLITTER
             if (has_blitter)
                 Blitmode((env&0x80)?1:0);
 #endif
 #if CONF_WITH_CACHE_CONTROL
-            pcurr = scan_2(pcurr, &env);    /* skip over video bytes if present */
-            pcurr = scan_2(pcurr, &env);
-            scan_2(pcurr, &env);            /* get desired cache state */
-            set_cache((env&0x08)?0:1);
+            if (!DESKTOP_INF())                 /* emudesk.inf */
+            {
+                pcurr = scan_2(pcurr, &env);    /* skip over video bytes if present */
+                pcurr = scan_2(pcurr, &env);
+                scan_2(pcurr, &env);            /* get desired cache state */
+                set_cache((env&0x08)?0:1);
+            }
 #endif
         }
         else if (tmp == 'Z')        /* something like "#Z 01 C:\THING.APP@" */
@@ -768,9 +798,37 @@ void gem_main(void)
     else
         n = readfile(INF_FILE_NAME, INF_SIZE, infbuf);
 
+#if !CONF_WITH_DESKTOP_INF_FALLBACK
     if (n < 0L)
         n = 0L;
-    infbuf[n] = '\0';           /* terminate input data */
+    infbuf[n] = '\0';               /* terminate input data */
+#else
+    if (n >= 0L)
+    {
+        infbuf[n] = '\0';
+        infbuf[INF_SIZE] = '\0';    /* 0 marks as emudesk format */
+    }
+    else                            /* not found, try desktop.inf, newdesk.inf */
+    {
+        n = readfile(INF_FILE_ALT1, INF_SIZE-1, infbuf);
+        if (n >= 0L)
+        {
+            infbuf[n] = '\0';
+            infbuf[INF_SIZE] = 1;   /* 1 marks as desktop.inf */
+        }
+        else
+        {
+            n = readfile(INF_FILE_ALT2, INF_SIZE-1, infbuf);
+            if (n >= 0L)
+            {
+                infbuf[n] = '\0';
+                infbuf[INF_SIZE] = 2;   /* 2 marks as newdesk.inf */
+            }
+            else
+                infbuf[0] = '\0';   /* empty file */
+        }
+    }
+#endif
 
     if (!gl_changerez)          /* can't be here because of rez change,       */
         process_inf1();         /*  so see if .inf says we need to change rez */
