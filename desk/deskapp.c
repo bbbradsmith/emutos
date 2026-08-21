@@ -420,13 +420,7 @@ static char *app_parse(char *pcurr, ANODE *pa)
 #endif
 
     pcurr = scan_2(pcurr, &pa->a_aicon);
-    if (pa->a_aicon >= G.g_numiblks)
-        pa->a_aicon = IG_APPL;
     pcurr = scan_2(pcurr, &pa->a_dicon);
-    if (pa->a_dicon >= G.g_numiblks)
-        pa->a_dicon = IG_DOCU;
-    pcurr++;
-
 #if CONF_WITH_DESKTOP_INF_FALLBACK
     /* convert icon numbers in DESKTOP.INF */
     if (inf_rev_level < 0)
@@ -434,8 +428,13 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pa->a_aicon = desktop_inf_icon(pa->a_aicon);
         pa->a_dicon = desktop_inf_icon(pa->a_dicon);
     }
-    else
 #endif
+    if (pa->a_aicon >= G.g_numiblks)
+        pa->a_aicon = IG_APPL;
+    if (pa->a_dicon >= G.g_numiblks)
+        pa->a_dicon = IG_DOCU;
+    pcurr++;
+
     /* convert icon numbers in EMUDESK.INF revision 0 */
     if (inf_rev_level == 0)
     {
