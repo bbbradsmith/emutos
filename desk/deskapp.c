@@ -781,15 +781,6 @@ static void read_inf_file(char *infbuf)
         /* rev -1 prefix indicates desktop.inf format */
         strcpy(infbuf,DESKTOP_INF_PREFIX);
 
-        strcpy(inf_file_name, INF_FILE_ALT1);
-        inf_file_name[0] += G.g_stdrv;
-        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
-        if (ret >= 0)
-        {
-            infbuf[ret+DIP_LEN] = '\0';
-            return;           /* desktop.inf */
-        }
-
         strcpy(inf_file_name, INF_FILE_ALT2);
         inf_file_name[0] += G.g_stdrv;
         ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
@@ -797,6 +788,15 @@ static void read_inf_file(char *infbuf)
         {
             infbuf[ret+DIP_LEN] = '\0';
             return;           /* newdesk.inf */
+        }
+
+        strcpy(inf_file_name, INF_FILE_ALT1);
+        inf_file_name[0] += G.g_stdrv;
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
+        if (ret >= 0)
+        {
+            infbuf[ret+DIP_LEN] = '\0';
+            return;           /* desktop.inf */
         }
     }
     infbuf[0] = '\0';         /* no file */

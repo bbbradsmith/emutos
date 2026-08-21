@@ -808,21 +808,21 @@ void gem_main(void)
         infbuf[n] = '\0';
         infbuf[INF_SIZE] = '\0';    /* 0 marks as emudesk format */
     }
-    else                            /* not found, try desktop.inf, newdesk.inf */
+    else                            /* not found, try newdesk.inf, desktop.inf */
     {
-        n = readfile(INF_FILE_ALT1, INF_SIZE-1, infbuf);
+        n = readfile(INF_FILE_ALT2, INF_SIZE-1, infbuf);
         if (n >= 0L)
         {
             infbuf[n] = '\0';
-            infbuf[INF_SIZE] = 1;   /* 1 marks as desktop.inf */
+            infbuf[INF_SIZE] = 2;   /* 1 marks as newdesk.inf */
         }
         else
         {
-            n = readfile(INF_FILE_ALT2, INF_SIZE-1, infbuf);
+            n = readfile(INF_FILE_ALT1, INF_SIZE-1, infbuf);
             if (n >= 0L)
             {
                 infbuf[n] = '\0';
-                infbuf[INF_SIZE] = 2;   /* 2 marks as newdesk.inf */
+                infbuf[INF_SIZE] = 1;   /* 2 marks as desktop.inf */
             }
             else
                 infbuf[0] = '\0';   /* empty file */
