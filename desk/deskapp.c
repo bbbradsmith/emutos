@@ -322,10 +322,10 @@ static UWORD desktop_inf_icon(WORD i)
  * If the next token is a 3 digit hex number, skip over it,
  * otherwise return the starting position.
  */
-static char* scan_skip3(char *pcurr)
+static char *scan_skip3(char *pcurr)
 {
     int i;
-    char* pskip = pcurr;
+    char *pskip = pcurr;
 
     while(*pskip == ' ')
         pskip++;
@@ -409,16 +409,6 @@ static char *app_parse(char *pcurr, ANODE *pa)
         pcurr = scan_2(pcurr, &pa->a_yspot);
     }
 
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-    if (inf_rev_level < 0 && !(pa->a_flags & AF_ISDESK))
-    {
-        /* newdesk.inf contains a 3 digit hex entry here,
-         * which was used for keyboard shortcut assignment
-         * in fields DFGINPY. */
-        pcurr = scan_skip3(pcurr);
-    }
-#endif
-
     pcurr = scan_2(pcurr, &pa->a_aicon);
     pcurr = scan_2(pcurr, &pa->a_dicon);
 #if CONF_WITH_DESKTOP_INF_FALLBACK
@@ -443,6 +433,16 @@ static char *app_parse(char *pcurr, ANODE *pa)
         if (pa->a_dicon == IG_DOCU_REV0)
             pa->a_dicon = IG_DOCU;
     }
+
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+    if ((inf_rev_level < 0) && !(pa->a_flags & AF_ISDESK))
+    {
+        /* newdesk.inf contains a 3 digit hex entry here,
+         * which was used for keyboard shortcut assignment
+         * in fields DFGINPY. */
+        pcurr = scan_skip3(pcurr);
+    }
+#endif
 
     if (pa->a_flags & AF_ISDESK)
     {
