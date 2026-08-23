@@ -101,13 +101,6 @@ void gem_main(void);            /* called only from gemstart.S */
 
 #define WAIT_TIMEOUT 500                /* see wait_for_accs() */
 
-#if CONF_WITH_DESKTOP_INF_FALLBACK
-extern WORD     inf_rev_level;              /* from deskapp.c */
-#define DESKTOP_INF()   (inf_rev_level<0)
-#else
-#define DESKTOP_INF()   (0)
-#endif
-
 typedef struct {                     /* used by count_accs()/ldaccs() */
     LONG addr;                          /* DA load address */
     char name[LEN_ZFNAME];              /* DA file name */
@@ -119,6 +112,13 @@ static char     infbuf[INF_SIZE+1];     /* used to read part of EMUDESK.INF */
 #if CONF_WITH_BACKGROUNDS
 static BOOL     bgfound;                /* 'Q' line found in EMUDESK.INF? */
 static WORD     bg[3];                  /* desktop backgrounds (1, 2, >2 planes) */
+#endif
+
+#if CONF_WITH_DESKTOP_INF_FALLBACK
+static BOOL     desktop_inf;            /* indicates legacy INF format */
+#define DESKTOP_INF()   (desktop_inf)
+#else
+#define DESKTOP_INF()   (0)
 #endif
 
 /* Some global variables: */
@@ -803,7 +803,7 @@ void gem_main(void)
         n = 0L;
     infbuf[n] = '\0';               /* terminate input data */
 #else
-    inf_rev_level = 0;
+    desktop_inf = FALSE;
     if (n >= 0L)
     {
         infbuf[n] = '\0';
@@ -814,7 +814,7 @@ void gem_main(void)
         if (n >= 0L)                /* newdesk.inf */
         {
             infbuf[n] = '\0';
-            inf_rev_level = -1;
+            desktop_inf = TRUE;
         }
         else
         {
@@ -822,7 +822,7 @@ void gem_main(void)
             if (n >= 0L)            /* desktop.inf */
             {
                 infbuf[n] = '\0';
-                inf_rev_level = -1;
+                desktop_inf = TRUE;
             }
             else
                 infbuf[0] = '\0';   /* empty file */
