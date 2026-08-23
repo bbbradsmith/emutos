@@ -102,8 +102,8 @@ void gem_main(void);            /* called only from gemstart.S */
 #define WAIT_TIMEOUT 500                /* see wait_for_accs() */
 
 #if CONF_WITH_DESKTOP_INF_FALLBACK
-/* use last byte of infbuf to mark DESKTOP.INF */
-#define DESKTOP_INF()   (infbuf[INF_SIZE]!=0)
+extern WORD     inf_rev_level;              /* from deskapp.c */
+#define DESKTOP_INF()   (inf_rev_level<0)
 #else
 #define DESKTOP_INF()   (0)
 #endif
@@ -377,7 +377,7 @@ static void process_inf1(void)
             pcurr = scan_2(pcurr, &env2);
             mode = MAKE_UWORD(env1, env2);
 
-            if (DESKTOP_INF())                     /* desktop.inf */
+            if (DESKTOP_INF())          /* desktop.inf */
             {
                 /* convert to emudesk ST video mode */
                 switch (mode & 0x000F)
@@ -803,26 +803,26 @@ void gem_main(void)
         n = 0L;
     infbuf[n] = '\0';               /* terminate input data */
 #else
+    inf_rev_level = 0;
     if (n >= 0L)
     {
         infbuf[n] = '\0';
-        infbuf[INF_SIZE] = '\0';    /* 0 marks as emudesk format */
     }
     else                            /* not found, try newdesk.inf, desktop.inf */
     {
-        n = readfile(INF_FILE_ALT2, INF_SIZE-1, infbuf);
-        if (n >= 0L)
+        n = readfile(INF_FILE_ALT2, INF_SIZE, infbuf);
+        if (n >= 0L)                /* newdesk.inf */
         {
             infbuf[n] = '\0';
-            infbuf[INF_SIZE] = 2;   /* 1 marks as newdesk.inf */
+            inf_rev_level = -1;
         }
         else
         {
-            n = readfile(INF_FILE_ALT1, INF_SIZE-1, infbuf);
-            if (n >= 0L)
+            n = readfile(INF_FILE_ALT1, INF_SIZE, infbuf);
+            if (n >= 0L)            /* desktop.inf */
             {
                 infbuf[n] = '\0';
-                infbuf[INF_SIZE] = 1;   /* 2 marks as desktop.inf */
+                inf_rev_level = -1;
             }
             else
                 infbuf[0] = '\0';   /* empty file */
