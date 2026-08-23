@@ -768,8 +768,6 @@ static void read_inf_file(char *infbuf)
         ret = 0L;
     infbuf[ret] = '\0';
 #else
-#define DESKTOP_INF_PREFIX       "#R FF\r\n"
-#define DIP_LEN                  7
     if (ret >= 0L)
     {
         infbuf[ret] = '\0';
@@ -777,29 +775,27 @@ static void read_inf_file(char *infbuf)
     }
     else                      /* not found, try ST desktop.inf instead */
     {
-        /* rev -1 prefix indicates desktop.inf format */
-        strcpy(infbuf,DESKTOP_INF_PREFIX);
-
         strcpy(inf_file_name, INF_FILE_ALT2);
         inf_file_name[0] += G.g_stdrv;
-        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
         if (ret >= 0)
         {
-            infbuf[ret+DIP_LEN] = '\0';
+            infbuf[ret] = '\0';
+            inf_rev_level = -1;
             return;           /* newdesk.inf */
         }
 
         strcpy(inf_file_name, INF_FILE_ALT1);
         inf_file_name[0] += G.g_stdrv;
-        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-(1+DIP_LEN), infbuf+DIP_LEN);
+        ret = dos_load_file(inf_file_name, SIZE_SHELBUF-CPDATA_LEN-1, infbuf);
         if (ret >= 0)
         {
-            infbuf[ret+DIP_LEN] = '\0';
+            infbuf[ret] = '\0';
+            inf_rev_level = -1;
             return;           /* desktop.inf */
         }
     }
     infbuf[0] = '\0';         /* no file */
-#undef DIP_LEN
 #endif
 }
 
@@ -944,6 +940,7 @@ void app_start(void)
     /* make sure there isn't old data in our allocated buffer */
     buf[0] = '\0';
     buf[CPDATA_LEN] = '\0';
+    inf_rev_level = 0;
 
     shel_get(buf, SIZE_SHELBUF);
     inf_data = buf + CPDATA_LEN;
@@ -956,7 +953,6 @@ void app_start(void)
         build_inf(inf_data, xcnt, ycnt);
 
     wincnt = 0;
-    inf_rev_level = 0;
     pcurr = inf_data;
 
     while(*pcurr)
