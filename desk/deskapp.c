@@ -141,7 +141,7 @@
 #define MAX_SIZE_INF_LINE   (MAXPATHLEN+100)    /* conservative */
 
 
-GLOBAL WORD     inf_rev_level;  /* revision level of current EMUDESK.INF */
+static WORD     inf_rev_level;  /* revision level of current EMUDESK.INF */
 
 static char     *atextptr;      /* current pointer within ANODE text buffer */
 
