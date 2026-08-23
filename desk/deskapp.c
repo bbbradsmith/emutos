@@ -1011,7 +1011,7 @@ void app_start(void)
                 pcurr = scan_2(pcurr, &pws->w_save);
                 pcurr = scan_2(pcurr, &pws->h_save);
 #if CONF_WITH_DESKTOP_INF_FALLBACK
-                if (inf_rev_level < 0)
+                if (inf_rev_level < 0 && pws->w_save >= 10)
                 {
                     /* emutos file windows have no horizontal scroll,
                     * compensate to show the correct icon, if possible.
